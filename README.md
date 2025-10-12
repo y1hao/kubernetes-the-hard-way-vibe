@@ -24,6 +24,14 @@ Our goals are:
 Doing everything at once is hard. So, let's first start with a high level overview. Please arrange all the things we need to do into several relatively self-contained "chapters". We'll then dig into each "chapter" to get things working gradually.
 ```
 
-From there, ChatGPT created a detailed roadmap, which I saved in [SPEC.md](./spec.md).
+From there, ChatGPT created a detailed roadmap, which I saved in [SPEC.md](./spec.md). As part of Chapter 0, I also got a detailed project architecture doc which I saved in [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-For each chapter, I used Codex to discuss, plan and execute.
+For each chapter, I used Codex to discuss, plan and execute. After each chapter is done, I asked Codex to generate a summary of what was completed in the chapter below:
+
+## Summaries
+
+### Chapter 0
+
+- Documented the target AWS-based Kubernetes architecture with decisions and rationale in `ARCHITECTURE.md`.
+- Appended an ASCII topology diagram illustrating VPC, AZ, subnet, and node placement.
+- Clarified Calico’s VXLAN mode and its alternatives, plus explained kube-proxy’s IPVS mode behavior.
