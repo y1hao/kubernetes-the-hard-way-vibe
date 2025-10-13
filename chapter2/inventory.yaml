@@ -1,0 +1,57 @@
+# Inventory for Chapter 2 EC2 nodes (static mapping committed for documentation and tooling).
+metadata:
+  description: Kubernetes the Hard Way lab nodes
+  region: ap-southeast-2
+  generated_by: chapter2/TASKS.md
+  ssh_key_path: ../chapter1/kthw-lab
+  ssh_user: ubuntu
+  bastion:
+    hostname: bastion
+    public_ip: TODO
+    private_ip: 10.240.0.10
+    security_group: kthw-bastion
+
+availability_zones:
+  a:
+    zone_id: apse2-az1
+    zone_name: ap-southeast-2a
+  b:
+    zone_id: apse2-az2
+    zone_name: ap-southeast-2c
+  c:
+    zone_id: apse2-az3
+    zone_name: ap-southeast-2b
+
+control_planes:
+  - name: cp-a
+    role: control-plane
+    az_suffix: a
+    private_ip: 10.240.16.10
+    subnet_cidr: 10.240.16.0/24
+  - name: cp-b
+    role: control-plane
+    az_suffix: b
+    private_ip: 10.240.48.10
+    subnet_cidr: 10.240.48.0/24
+  - name: cp-c
+    role: control-plane
+    az_suffix: c
+    private_ip: 10.240.80.10
+    subnet_cidr: 10.240.80.0/24
+
+workers:
+  - name: worker-a
+    role: worker
+    az_suffix: a
+    private_ip: 10.240.16.20
+    subnet_cidr: 10.240.16.0/24
+  - name: worker-b
+    role: worker
+    az_suffix: b
+    private_ip: 10.240.48.20
+    subnet_cidr: 10.240.48.0/24
+  - name: worker-c
+    role: worker
+    az_suffix: c
+    private_ip: 10.240.80.20
+    subnet_cidr: 10.240.80.0/24

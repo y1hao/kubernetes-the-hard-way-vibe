@@ -41,3 +41,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Captured Chapter 1 prerequisite decisions in `ADRs/000-chapter1-network-prep-decisions.md` and indexed them via `DECISIONS.md`.
 - Scaffolded `chapter1/terraform/` with network and security modules, plus documented inputs and notes for future chapters.
 - Provisioned the AWS network substrate (VPC, subnets, IGW, managed NAT, security groups) using Terraform 1.13.3.
+
+### Chapter 2
+
+- Locked in instance sizing, AMI sourcing, and static IP strategy via `ADRs/001-chapter2-node-provisioning-decisions.md` and refreshed `DECISIONS.md`.
+- Built `chapter2/terraform/` to launch 3× control-plane and 3× worker `t3.medium` instances with 20 GiB gp3 roots using cloud-init templates.
+- Added committed ops assets: role-specific cloud-init (`chapter2/cloud-init/`), a static inventory (`chapter2/inventory.yaml`), and a bastion-run validation script (`chapter2/scripts/validate_nodes.sh`).
