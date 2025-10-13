@@ -2,9 +2,14 @@
 
 ## Terraform Usage
 - Format & validate: `bin/terraform -chdir=chapter1/terraform fmt` and `bin/terraform -chdir=chapter1/terraform validate`.
-- Preview changes: `bin/terraform -chdir=chapter1/terraform plan -var 'admin_cidr_blocks=["<your-ip>/32"]'`.
-- Apply: `bin/terraform -chdir=chapter1/terraform apply -var 'admin_cidr_blocks=["<your-ip>/32"]'`.
-- Destroy (when finished): `bin/terraform -chdir=chapter1/terraform destroy -var 'admin_cidr_blocks=["<your-ip>/32"]'`.
+- Preview changes with current public IP: `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform plan -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
+- Apply with current public IP: `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform apply -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
+- Destroy (when finished): reuse the latest IP with `bin/terraform -chdir=chapter1/terraform destroy -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
+
+### When Your IP Changes Later
+1. Re-evaluate your public IP: `NEW_IP=$(curl -fsS ifconfig.me)`.
+2. Re-run `terraform plan` or `apply` with `-var "admin_cidr_blocks=[\"${NEW_IP}/32\"]"` to update security groups.
+3. If Terraform state already exists, a fresh `apply` updates the ingress rules without recreating infrastructure.
 
 ## Security Group Matrix (Ingress)
 | Security Group | Purpose | Source | Ports | Notes |
