@@ -22,10 +22,16 @@ variable "ssh_key_name" {
   default     = "kthw-lab"
 }
 
-variable "ami_ssm_parameter_name" {
-  description = "SSM parameter name that exposes the latest Ubuntu 22.04 LTS AMI"
+variable "ami_ssm_parameter_path" {
+  description = "SSM parameter path containing Ubuntu 22.04 LTS AMI IDs"
   type        = string
-  default     = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp3"
+  default     = "/aws/service/canonical/ubuntu/server/22.04/stable"
+}
+
+variable "ami_ssm_parameter_suffix" {
+  description = "Suffix appended to the SSM parameter path to select the desired image (e.g., amd64/hvm/ebs-gp2/ami-id)"
+  type        = string
+  default     = "amd64/hvm/ebs-gp2/ami-id"
 }
 
 variable "extra_tags" {

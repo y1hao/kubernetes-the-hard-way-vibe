@@ -1,11 +1,13 @@
-data "aws_ssm_parameter" "ubuntu_2204_ami" {
-  name = var.ami_ssm_parameter_name
+data "aws_ssm_parameters_by_path" "ubuntu_2204" {
+  path            = var.ami_ssm_parameter_path
+  recursive       = true
+  with_decryption = false
 }
 
 resource "aws_instance" "nodes" {
   for_each = local.node_definitions
 
-  ami                         = data.aws_ssm_parameter.ubuntu_2204_ami.value
+  ami                         = local.ubuntu_ami_id
   instance_type               = var.instance_type
   subnet_id                   = local.private_subnet_ids[each.value.az_suffix]
   private_ip                  = each.value.private_ip

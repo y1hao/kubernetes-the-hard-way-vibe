@@ -55,4 +55,18 @@ locals {
     "control-plane" = abspath("${path.module}/../cloud-init/control-plane.yaml")
     "worker"        = abspath("${path.module}/../cloud-init/worker.yaml")
   }
+
+  ssm_parameter_map = zipmap(
+    data.aws_ssm_parameters_by_path.ubuntu_2204.names,
+    data.aws_ssm_parameters_by_path.ubuntu_2204.values,
+  )
+
+  filtered_ssm_parameter_map = {
+    for name, value in local.ssm_parameter_map :
+    name => value if endswith(name, "/${var.ami_ssm_parameter_suffix}")
+  }
+
+  sorted_filtered_parameter_names = sort(keys(local.filtered_ssm_parameter_map))
+
+  ubuntu_ami_id = length(local.sorted_filtered_parameter_names) > 0 ? local.filtered_ssm_parameter_map[local.sorted_filtered_parameter_names[length(local.sorted_filtered_parameter_names) - 1]] : null
 }

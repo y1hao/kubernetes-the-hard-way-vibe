@@ -45,5 +45,5 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 ### Chapter 2
 
 - Locked in instance sizing, AMI sourcing, and static IP strategy via `ADRs/001-chapter2-node-provisioning-decisions.md` and refreshed `DECISIONS.md`.
-- Built `chapter2/terraform/` to launch 3× control-plane and 3× worker `t3.medium` instances with 20 GiB gp3 roots using cloud-init templates.
+- Built `chapter2/terraform/` to launch 3× control-plane and 3× worker `t3.medium` instances with 20 GiB gp3 roots using cloud-init templates and dynamic Ubuntu 22.04 AMI discovery via SSM.
 - Added committed ops assets: role-specific cloud-init (`chapter2/cloud-init/`), a static inventory (`chapter2/inventory.yaml`), and a bastion-run validation script (`chapter2/scripts/validate_nodes.sh`).

@@ -49,7 +49,7 @@ Here are the roadmap of this project:
 **Work**
 
 * Launch 3× control-plane EC2 and 3× worker EC2 on `t3.medium` with 20 GiB gp3 root volumes via Terraform (`chapter2/terraform/`).
-* Source the Ubuntu 22.04 LTS AMI dynamically from SSM parameter `/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp3` to stay current without hand-curated AMI IDs.
+* Source the Ubuntu 22.04 LTS AMI dynamically by scanning the SSM path `/aws/service/canonical/ubuntu/server/22.04/stable` and selecting the latest `amd64/hvm/ebs-gp2/ami-id`, avoiding hand-curated AMI IDs.
 * Attach deterministic private IPs per ADR 001 (`cp-a 10.240.16.10`, …, `worker-c 10.240.80.20`) and reuse Chapter 1 security groups and private subnets through remote state.
 * Apply base hardening with role-specific cloud-init (`chapter2/cloud-init/`) that sets hostnames, disables swap, loads `overlay`/`br_netfilter`/`nf_conntrack`, enforces Kubernetes sysctls, upgrades packages, and installs baseline tooling (`chrony`, `conntrack`, `socat`, `iptables`, `nfs-common`, `curl`, `jq`).
 
