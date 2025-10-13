@@ -35,3 +35,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Documented the target AWS-based Kubernetes architecture with decisions and rationale in `ARCHITECTURE.md`.
 - Appended an ASCII topology diagram illustrating VPC, AZ, subnet, and node placement.
 - Clarified Calico’s VXLAN mode and its alternatives, plus explained kube-proxy’s IPVS mode behavior.
+
+### Chapter 1
+
+- Captured Chapter 1 prerequisite decisions in `ADRs/000-chapter1-network-prep-decisions.md` and indexed them via `DECISIONS.md`.
+- Scaffolded `chapter1/terraform/` with network and security modules, plus documented inputs and notes for future chapters.
+- Provisioned the AWS network substrate (VPC, subnets, IGW, managed NAT, security groups) using Terraform 1.13.3.
