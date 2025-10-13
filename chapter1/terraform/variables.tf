@@ -77,6 +77,30 @@ variable "key_pair_name" {
   default     = "kthw-lab"
 }
 
+variable "bastion_instance_type" {
+  description = "Instance type for the bastion host"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "bastion_subnet_suffix" {
+  description = "AZ suffix indicating which public subnet hosts the bastion"
+  type        = string
+  default     = "a"
+}
+
+variable "bastion_private_ip" {
+  description = "Static private IP assigned to the bastion in its public subnet"
+  type        = string
+  default     = "10.240.0.10"
+}
+
+variable "bastion_root_volume_size_gb" {
+  description = "Root volume size (GiB) for the bastion"
+  type        = number
+  default     = 10
+}
+
 variable "enable_nat_gateway" {
   description = "Controls whether a managed NAT gateway is provisioned for private subnets"
   type        = bool

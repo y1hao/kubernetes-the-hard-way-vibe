@@ -2,14 +2,14 @@
 
 ## Terraform Usage
 - Format & validate: `bin/terraform -chdir=chapter1/terraform fmt` and `bin/terraform -chdir=chapter1/terraform validate`.
-- Preview changes with current public IP: `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform plan -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
-- Apply with current public IP: `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform apply -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
+- Preview changes with current operator IP (used only for bastion ingress): `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform plan -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
+- Apply with current operator IP: `IP=$(curl -fsS ifconfig.me)` and `bin/terraform -chdir=chapter1/terraform apply -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
 - Destroy (when finished): reuse the latest IP with `bin/terraform -chdir=chapter1/terraform destroy -var "admin_cidr_blocks=[\"${IP}/32\"]"`.
 
 ### When Your IP Changes Later
 1. Re-evaluate your public IP: `NEW_IP=$(curl -fsS ifconfig.me)`.
-2. Re-run `terraform plan` or `apply` with `-var "admin_cidr_blocks=[\"${NEW_IP}/32\"]"` to update security groups.
-3. If Terraform state already exists, a fresh `apply` updates the ingress rules without recreating infrastructure.
+2. Re-run `terraform plan` or `apply` with `-var "admin_cidr_blocks=[\"${NEW_IP}/32\"]"` to refresh the bastion ingress rule.
+3. If Terraform state already exists, a fresh `apply` updates the bastion security group without recreating infrastructure.
 
 ## Security Group Matrix (Ingress)
 | Security Group | Purpose | Source | Ports | Notes |
@@ -22,7 +22,12 @@
 | `kthw-worker` | Worker nodes | Bastion SG | 22/tcp | Admin SSH |
 |  |  | Control plane SG | 10250/tcp | kubelet API from control plane |
 |  |  | NodePort CIDR list | 30000-32767/tcp | Optional app exposure |
-| `kthw-api-nlb` | API Network LB | Admin CIDR list | 6443/tcp | Fronts kube-apiserver |
+| `kthw-api-nlb` | API Network LB | Bastion SG | 6443/tcp | Fronts kube-apiserver via bastion |
+
+## Bastion Host Notes
+- Instance: Ubuntu 22.04 LTS (`t3.micro`) in public subnet suffix `a` with static private IP `10.240.0.10` and an auto-assigned public IP.
+- SSH: `ssh -i chapter1/kthw-lab ubuntu@$(bin/terraform -chdir=chapter1/terraform output -raw bastion_public_ip)`.
+- Environment prep (optional): install `awscli`, `jq`, `kubectl`, `cfssl`, and `terraform` as needed to operate from the bastion.
 
 ## NAT Gateway Notes
 - Hosted in public subnet suffix `a`; ensure that subnet spans the AZ used by the bastion for minimized latency.

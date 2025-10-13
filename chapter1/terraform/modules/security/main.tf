@@ -174,13 +174,11 @@ resource "aws_security_group_rule" "worker_nodeport" {
 }
 
 resource "aws_security_group_rule" "api_nlb_ingress" {
-  count = length(var.admin_cidr_blocks) > 0 ? 1 : 0
-
-  type              = "ingress"
-  from_port         = 6443
-  to_port           = 6443
-  protocol          = "tcp"
-  cidr_blocks       = var.admin_cidr_blocks
-  security_group_id = aws_security_group.api_nlb.id
-  description       = "Administrative API access"
+  type                     = "ingress"
+  from_port                = 6443
+  to_port                  = 6443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.bastion.id
+  security_group_id        = aws_security_group.api_nlb.id
+  description              = "Administrative API access via bastion"
 }
