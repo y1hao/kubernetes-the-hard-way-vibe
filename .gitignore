@@ -2,6 +2,5 @@ bin/
 chapter1/kthw-lab
 chapter1/kthw-lab.pub
 .terraform/
-.terraform.lock.hcl
 **/terraform.tfstate
 **/terraform.tfstate.*
