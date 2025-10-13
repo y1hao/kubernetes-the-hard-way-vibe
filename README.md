@@ -28,7 +28,7 @@ From there, ChatGPT created a detailed roadmap, which I saved in [SPEC.md](./spe
 
 For each chapter, I used Codex to discuss, plan and execute. After each chapter is done, I asked Codex to generate a summary of what was completed in the chapter below:
 
-## Summaries
+## Summaries for each completed chapter
 
 ### Chapter 0
 
