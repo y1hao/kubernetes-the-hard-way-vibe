@@ -88,3 +88,15 @@ variable "nat_gateway_subnet_suffix" {
   type        = string
   default     = "a"
 }
+
+variable "admin_cidr_blocks" {
+  description = "CIDR blocks permitted to reach administrative surfaces (bastion, API access)"
+  type        = list(string)
+  default     = []
+}
+
+variable "nodeport_source_cidrs" {
+  description = "CIDR blocks allowed to reach worker NodePort services"
+  type        = list(string)
+  default     = []
+}

@@ -11,3 +11,15 @@ module "network" {
   nat_gateway_subnet_suffix = var.nat_gateway_subnet_suffix
   tags                      = local.base_tags
 }
+
+module "security" {
+  source = "./modules/security"
+
+  name_prefix           = "kthw"
+  vpc_id                = module.network.vpc_id
+  tags                  = local.base_tags
+  admin_cidr_blocks     = var.admin_cidr_blocks
+  pod_cidr              = var.pod_cidr
+  service_cidr          = var.service_cidr
+  nodeport_source_cidrs = var.nodeport_source_cidrs
+}
