@@ -82,3 +82,9 @@ variable "enable_nat_gateway" {
   type        = bool
   default     = true
 }
+
+variable "nat_gateway_subnet_suffix" {
+  description = "AZ suffix of the public subnet hosting the managed NAT gateway"
+  type        = string
+  default     = "a"
+}

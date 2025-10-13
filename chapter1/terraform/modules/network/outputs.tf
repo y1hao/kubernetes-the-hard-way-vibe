@@ -27,3 +27,13 @@ output "private_subnet_ids" {
   description = "Map of AZ suffix to private subnet IDs"
   value       = { for suffix, subnet in aws_subnet.private : suffix => subnet.id }
 }
+
+output "nat_gateway_id" {
+  description = "Identifier of the managed NAT gateway"
+  value       = var.enable_nat_gateway ? aws_nat_gateway.this[0].id : null
+}
+
+output "nat_eip_allocation_id" {
+  description = "Allocation ID for the managed NAT gateway EIP"
+  value       = var.enable_nat_gateway ? aws_eip.nat[0].id : null
+}

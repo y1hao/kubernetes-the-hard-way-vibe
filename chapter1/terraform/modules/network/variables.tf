@@ -28,6 +28,18 @@ variable "private_subnet_cidrs" {
   type        = map(string)
 }
 
+variable "enable_nat_gateway" {
+  description = "Controls whether a managed NAT gateway is created"
+  type        = bool
+  default     = false
+}
+
+variable "nat_gateway_subnet_suffix" {
+  description = "AZ suffix of the public subnet hosting the NAT gateway"
+  type        = string
+  default     = "a"
+}
+
 variable "tags" {
   description = "Common tags applied to network resources"
   type        = map(string)
