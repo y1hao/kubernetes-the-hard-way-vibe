@@ -10,8 +10,8 @@
    - Create `chapter2/terraform/` with provider configuration, variables, outputs, and locals.
    - Define `data "terraform_remote_state"` reading `../chapter1/terraform/terraform.tfstate` to import VPC IDs, subnet IDs, and security groups.
 2. **Instance module**
-   - Implement resources for six `aws_instance` objects (3 control planes, 3 workers) using the static private IP map from ADR 001.
-   - Pull the Ubuntu 22.04 AMI via `data "aws_ssm_parameter"` and `data "aws_ami"` lookup.
+   - Implement resources for five `aws_instance` objects (3 control planes, 2 workers) using the static private IP map from ADR 002.
+   - Pull the Ubuntu 22.04 AMI via `data "aws_ssm_parameter"` and `data "aws_ami"` lookup; allow per-role instance types.
    - Attach the existing security groups, private subnets, `kthw` tags, and `kthw-lab` SSH key.
    - Configure 20 GiB gp3 root volumes and per-instance name/hostname tags.
 3. **Cloud-init templates**

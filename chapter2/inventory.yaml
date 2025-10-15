@@ -50,8 +50,3 @@ workers:
     az_suffix: b
     private_ip: 10.240.48.20
     subnet_cidr: 10.240.48.0/24
-  - name: worker-c
-    role: worker
-    az_suffix: c
-    private_ip: 10.240.80.20
-    subnet_cidr: 10.240.80.0/24

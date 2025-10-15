@@ -8,7 +8,7 @@ resource "aws_instance" "nodes" {
   for_each = local.node_definitions
 
   ami                         = local.ubuntu_ami_id
-  instance_type               = var.instance_type
+  instance_type               = each.value.role == "control-plane" ? var.control_plane_instance_type : var.worker_instance_type
   subnet_id                   = local.private_subnet_ids[each.value.az_suffix]
   private_ip                  = each.value.private_ip
   key_name                    = var.ssh_key_name

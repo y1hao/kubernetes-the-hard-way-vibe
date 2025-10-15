@@ -1,7 +1,7 @@
 # ADR: Chapter 2 Node Provisioning Decisions
 
 ## Status
-Accepted
+Superseded by ADR 002
 
 ## Context
 With Chapter 1 complete, the network substrate (VPC, subnets, security groups, NAT) is in place. Chapter 2 focuses on bringing up the six EC2 nodes (three control planes and three workers) that will host the Kubernetes control plane, etcd, and workloads in later chapters. We needed to lock in instance characteristics, address assignments, bootstrapping tooling, and Terraform layout so implementation can proceed without open design questions.

@@ -4,14 +4,14 @@ This document captures the desired end-state architecture for the cluster we are
 
 ## Cluster Topology & Availability
 
-- **Nodes**: 3 control plane nodes and 3 worker nodes.
-  - Guarantees control plane quorum even if one AZ or instance is lost.
-  - Keeps symmetry across AZs, simplifying load-balancing and CNI expectations.
-- **Availability Zones**: Spread each control plane and worker across three distinct AZs within a single AWS region.
-  - Avoids multi-region latency, while providing AZ-level resilience.
+- **Nodes**: 3 control plane nodes and 2 worker nodes.
+  - Control plane maintains quorum even if one AZ or instance is lost.
+  - Worker capacity lives in AZ a and AZ b for cost savings; AZ c hosts only a control plane node until we scale out.
+- **Availability Zones**: Spread the control plane across all three AZs; keep workers in AZ a and AZ b while leaving the AZ c worker slot idle for now.
+  - Avoids multi-region latency while preserving control plane resilience; note that losing AZ a or AZ b removes worker capacity until we scale out again.
   - Aligns with AWS fault domains and keeps costs predictable.
-- **Instance Sizing**: Modest general-purpose instance types (e.g., t3.medium or c6i.large) with consistent sizing for all roles.
-  - Ensures homogeneous performance characteristics and easier troubleshooting.
+- **Instance Sizing**: Control plane nodes run on `t3.medium`; workers run on `t3.small` to trim unused capacity.
+  - Keeps etcd and control components responsive while cutting worker costs; monitor aggregate pod memory when scheduling demos.
   - Leaves headroom for control plane workloads (etcd + Kubernetes components) and basic application demos.
 
 ## Network Layout
@@ -77,7 +77,7 @@ This document captures the desired end-state architecture for the cluster we are
 
 ## Naming & Tagging Conventions
 
-- **Hostnames**: `cp-a`, `cp-b`, `cp-c` for control planes and `worker-a`, `worker-b`, `worker-c` for workers, aligning the suffix with the AZ letter.
+- **Hostnames**: `cp-a`, `cp-b`, `cp-c` for control planes and `worker-a`, `worker-b` for workers (with `worker-c` reserved), aligning the suffix with the AZ letter.
 - **Tags**: Apply `Project=K8sHardWay`, `Role=ControlPlane|Worker|Bastion`, and `Env=Lab` to all AWS resources.
   - Simplifies search, IAM policies, and cleanup scripts.
 
@@ -117,7 +117,7 @@ This architecture will be refined only if validation in Chapter 0 uncovers confl
 |  |  |           |  |     |  |           |  |     |  |           |  |  |
 |  |  |  cp-a     |  |     |  |  cp-b     |  |     |  |  cp-c     |  |  |
 |  |  |  etcd     |  |     |  |  etcd     |  |     |  |  etcd     |  |  |
-|  |  |  worker-a |  |     |  |  worker-b |  |     |  |  worker-c |  |  |
+|  |  |  worker-a |  |     |  |  worker-b |  |     |  |  worker (res) |  |  |
 |  |  |           |  |     |  |           |  |     |  |           |  |  |
 |  |  +-----------+  |     |  +-----------+  |     |  +-----------+  |  |
 |  +-----------------+     +-----------------+     +-----------------+  |

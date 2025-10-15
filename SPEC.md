@@ -4,7 +4,7 @@ Here are the roadmap of this project:
 
 **Decisions**
 
-* 3 control planes + 3 workers, spread across 3 AZs.
+* 3 control planes + 2 workers, spread across 3 AZs (control plane across all AZs, workers in AZ a and AZ b).
 * Minimal AWS: VPC + subnets + EC2 + (option A) NLBs for stable L4 only (recommended), or (option B) a self-managed HA pair with EIP failover for purists.
 * Linux distro: Ubuntu LTS or Flatcar (pick one and stick to it).
 * Container runtime: `containerd`.
@@ -44,13 +44,13 @@ Here are the roadmap of this project:
 
 ---
 
-# Chapter 2 — Provision the 6 EC2 nodes
+# Chapter 2 — Provision the 5 EC2 nodes
 
 **Work**
 
-* Launch 3× control-plane EC2 and 3× worker EC2 on `t3.medium` with 20 GiB gp3 root volumes via Terraform (`chapter2/terraform/`).
+* Launch 3× control-plane EC2 on `t3.medium` and 2× worker EC2 on `t3.small`, each with 20 GiB gp3 root volumes via Terraform (`chapter2/terraform/`).
 * Source the Ubuntu 22.04 LTS AMI dynamically by scanning the SSM path `/aws/service/canonical/ubuntu/server/22.04/stable` and selecting the latest `amd64/hvm/ebs-gp2/ami-id`, avoiding hand-curated AMI IDs.
-* Attach deterministic private IPs per ADR 001 (`cp-a 10.240.16.10`, …, `worker-c 10.240.80.20`) and reuse Chapter 1 security groups and private subnets through remote state.
+* Attach deterministic private IPs per ADR 002 (`cp-a 10.240.16.10`, …, `worker-b 10.240.48.20`) and reuse Chapter 1 security groups and private subnets through remote state. Reserve `10.240.80.20` for future expansion.
 * Apply base hardening with role-specific cloud-init (`chapter2/cloud-init/`) that sets hostnames, disables swap, loads `overlay`/`br_netfilter`/`nf_conntrack`, enforces Kubernetes sysctls, upgrades packages, and installs baseline tooling (`chrony`, `conntrack`, `socat`, `iptables`, `nfs-common`, `curl`, `jq`).
 
 **Artifacts**
@@ -178,7 +178,7 @@ Here are the roadmap of this project:
 
 **Validation**
 
-* `systemctl status` clean; `kubectl get nodes` shows all 3 workers **Ready** (CNI pending until next chapter).
+* `systemctl status` clean; `kubectl get nodes` shows both workers **Ready** (CNI pending until next chapter).
 
 ---
 

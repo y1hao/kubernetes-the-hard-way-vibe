@@ -18,7 +18,7 @@ Our goals are:
 - We aim to use the minimal offerings from AWS like EC2 and VPCs. We don't use EKS 
 - We don't use things like kubeadm. Instead, we manually install everything from source by hand 
 - We need to make sure all control plane components are configured correctly so they can talk with each other. This will include certificates are generated and distributed correctly 
-- We want to have 3 control plane nodes and 3 worker nodes 
+- We want to have 3 control plane nodes and 2 worker nodes 
 - In the end, we need to be able to create a simple service (nginx is fine) running as a Deployment which we can reach to from the internet 
 
 Doing everything at once is hard. So, let's first start with a high level overview. Please arrange all the things we need to do into several relatively self-contained "chapters". We'll then dig into each "chapter" to get things working gradually.
@@ -44,6 +44,6 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 
 ### Chapter 2
 
-- Locked in instance sizing, AMI sourcing, and static IP strategy via `ADRs/001-chapter2-node-provisioning-decisions.md` and refreshed `DECISIONS.md`.
-- Built `chapter2/terraform/` to launch 3× control-plane and 3× worker `t3.medium` instances with 20 GiB gp3 roots using cloud-init templates and dynamic Ubuntu 22.04 AMI discovery via SSM.
+- Recorded Chapter 2 provisioning choices in `ADRs/001-chapter2-node-provisioning-decisions.md` and later right-sized the worker fleet via `ADRs/002-chapter2-worker-sizing-adjustment.md`, updating `DECISIONS.md` accordingly.
+- Built `chapter2/terraform/` to launch 3× control-plane `t3.medium` instances and 2× worker `t3.small` instances with 20 GiB gp3 roots using cloud-init templates and dynamic Ubuntu 22.04 AMI discovery via SSM.
 - Added committed ops assets: role-specific cloud-init (`chapter2/cloud-init/`), a static inventory (`chapter2/inventory.yaml`), and a bastion-run validation script (`chapter2/scripts/validate_nodes.sh`).

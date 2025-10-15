@@ -4,10 +4,16 @@ variable "aws_region" {
   default     = "ap-southeast-2"
 }
 
-variable "instance_type" {
-  description = "EC2 instance type for both control plane and worker nodes"
+variable "control_plane_instance_type" {
+  description = "EC2 instance type for control plane nodes"
   type        = string
   default     = "t3.medium"
+}
+
+variable "worker_instance_type" {
+  description = "EC2 instance type for worker nodes"
+  type        = string
+  default     = "t3.small"
 }
 
 variable "root_volume_size_gb" {

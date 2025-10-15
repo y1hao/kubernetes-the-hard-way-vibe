@@ -24,7 +24,7 @@ Both templates share the same hardening steps (swap off, module loads, sysctl en
 
 ## Static IP map
 - Control planes: `cp-a 10.240.16.10`, `cp-b 10.240.48.10`, `cp-c 10.240.80.10`.
-- Workers: `worker-a 10.240.16.20`, `worker-b 10.240.48.20`, `worker-c 10.240.80.20`.
+- Workers: `worker-a 10.240.16.20`, `worker-b 10.240.48.20`. (IP `10.240.80.20` remains reserved for a future worker.)
 
 ## Follow-up
 - Once the nodes are provisioned and validated, proceed to Chapter 3 to generate and distribute PKI material using the static host mapping above.

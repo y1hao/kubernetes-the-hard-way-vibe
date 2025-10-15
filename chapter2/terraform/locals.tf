@@ -34,11 +34,6 @@ locals {
       private_ip = "10.240.48.20"
       role       = "worker"
     }
-    "worker-c" = {
-      az_suffix  = "c"
-      private_ip = "10.240.80.20"
-      role       = "worker"
-    }
   }
 
   node_definitions = merge(local.control_plane_nodes, local.worker_nodes)
