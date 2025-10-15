@@ -54,6 +54,7 @@ PY
 IFS=$'\n' read -r -d '' -a PARSED_LINES < <(printf '%s\0' "${PARSER_OUTPUT}") || true
 
 SSH_USER_RESOLVED="${SSH_USER_ENV}"
+TAB=$'\t'
 declare -a HOST_ROWS=()
 for line in "${PARSED_LINES[@]}"; do
   IFS=$'\t' read -r kind value1 value2 value3 value4 <<<"${line}"
@@ -64,7 +65,7 @@ for line in "${PARSED_LINES[@]}"; do
       fi
       ;;
     HOST)
-      HOST_ROWS+=("${value1}\t${value2}\t${value3}\t${value4}")
+      HOST_ROWS+=("${value1}${TAB}${value2}${TAB}${value3}${TAB}${value4}")
       ;;
   esac
 done
