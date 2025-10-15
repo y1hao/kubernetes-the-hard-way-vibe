@@ -36,4 +36,4 @@
 1. Run `bin/terraform -chdir=chapter2/terraform fmt`, `validate`, and `plan` to catch configuration errors before applying.
 2. After `terraform apply`, export outputs to JSON and ensure IPs match the planned map; record values in Chapter 2 notes.
 3. From the bastion, execute `chapter2/scripts/validate_nodes.sh` and confirm all checks pass.
-4. Capture validation results and any deviations in `chapter2/notes.md` (to be created alongside documentation updates).
+4. Capture validation results and any deviations in `chapter2/README.md` (to be created alongside documentation updates).

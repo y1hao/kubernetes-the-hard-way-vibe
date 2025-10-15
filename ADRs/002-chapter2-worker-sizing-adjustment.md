@@ -21,6 +21,6 @@ While drafting Chapter 2 we initially selected six `t3.medium` instances to keep
 
 ## Follow-up
 - Update Chapter 2 Terraform to honour distinct instance type variables and drop the third worker resource.
-- Refresh `chapter2/inventory.yaml`, `chapter2/notes.md`, and any validation scripts to reflect the two-worker layout.
+- Refresh `chapter2/inventory.yaml`, `chapter2/README.md`, and any validation scripts to reflect the two-worker layout.
 - Amend Chapter 2 documentation (SPEC, TASKS) so engineers following the guide expect two workers on `t3.small` by default.
 - Revisit the readiness and scheduling strategy in later chapters to confirm two workers suffice for add-ons and demo workloads.
