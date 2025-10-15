@@ -48,6 +48,7 @@ write_files:
 runcmd:
   - [ bash, -c, 'swapoff -a' ]
   - [ bash, -c, "sed -ri 's/(.*swap.*)/#\\1/' /etc/fstab" ]
+  - [ bash, -lc, 'apt-get install -y linux-modules-extra-$(uname -r)' ]
   - [ modprobe, overlay ]
   - [ modprobe, br_netfilter ]
   - [ modprobe, nf_conntrack ]
