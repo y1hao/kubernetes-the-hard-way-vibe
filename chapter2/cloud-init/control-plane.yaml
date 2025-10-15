@@ -46,7 +46,7 @@ write_files:
 
 runcmd:
   - [ bash, -c, 'swapoff -a' ]
-  - [ bash, -c, "sed -ri 's/(.*swap.*)/#\1/' /etc/fstab" ]
+  - [ bash, -c, "sed -ri 's/(.*swap.*)/#\\1/' /etc/fstab" ]
   - [ modprobe, overlay ]
   - [ modprobe, br_netfilter ]
   - [ modprobe, nf_conntrack ]
