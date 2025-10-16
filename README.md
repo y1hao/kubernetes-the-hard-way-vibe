@@ -53,3 +53,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Logged PKI strategy in `ADRs/003-chapter3-pki-decisions.md` and expanded `.gitignore` to keep generated secrets out of version control.
 - Produced full PKI inventory under `chapter3/pki/` using `cfssl`, including apiserver, component, admin, and per-node kubelet certificates with documented SAN coverage.
 - Generated secrets encryption material in `chapter3/encryption/`, drafted distribution/rotation guidance (`chapter3/pki/manifest.yaml`, `chapter3/REVOCATION.md`), and captured execution notes in `chapter3/README.md`.
+
+### Chapter 4
+
+- Brought up the three-node etcd cluster (v3.5.12) with TLS on all control-plane nodes using the Chapter 3 CA and staged binaries under `chapter4/bin/`.
+- Extended the manifest-driven distribution tooling and added `chapter4/scripts/bootstrap_etcd_node.sh` to standardise service bring-up.
+- Documented validation flows (`etcdctl endpoint status/health`, `member list`) and captured implementation notes in `chapter4/README.md`.
