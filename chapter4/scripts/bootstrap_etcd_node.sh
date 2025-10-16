@@ -84,7 +84,6 @@ verify_binaries() {
 reload_systemd() {
   systemctl daemon-reload
   systemctl enable --now etcd
-  systemctl status --no-pager etcd
 }
 
 run_health_checks() {
@@ -94,7 +93,7 @@ run_health_checks() {
     if command -v etcdctl >/dev/null; then
       echo "[INFO] etcdctl endpoint status"
       etcdctl endpoint status --cluster || true
-      echo "[INFO] etcdctl endpoint health"
+      echo '[INFO] etcdctl endpoint health'
       etcdctl endpoint health || true
     fi
   else
