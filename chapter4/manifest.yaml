@@ -1,0 +1,143 @@
+apiVersion: kthw/v1
+kind: DistributionManifest
+metadata:
+  chapter: 4
+  generatedAt: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+entries:
+- name: etcd-binary
+  source: bin/etcd
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /opt/etcd/bin/etcd
+  mode: "755"
+- name: etcdctl-binary
+  source: bin/etcdctl
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /opt/etcd/bin/etcdctl
+  mode: "755"
+- name: etcd-systemd-unit
+  source: config/systemd/etcd.service
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/systemd/system/etcd.service
+  mode: "644"
+- name: etcd-env
+  perNode:
+    cp-a:
+      source: env/cp-a.env
+      destination:
+        path: /etc/etcd/etcd.env
+      mode: "640"
+      owner: etcd
+      group: etcd
+    cp-b:
+      source: env/cp-b.env
+      destination:
+        path: /etc/etcd/etcd.env
+      mode: "640"
+      owner: etcd
+      group: etcd
+    cp-c:
+      source: env/cp-c.env
+      destination:
+        path: /etc/etcd/etcd.env
+      mode: "640"
+      owner: etcd
+      group: etcd
+- name: etcdctl-env
+  source: etcdctl/etcdctl.env
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/etcd/etcdctl.env
+  mode: "640"
+  owner: etcd
+  group: etcd
+- name: etcd-ca
+  source: ../chapter3/pki/ca/ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/etcd/pki/ca.pem
+  mode: "644"
+- name: etcd-server
+  perNode:
+    cp-a:
+      cert: pki/server/cp-a/server.pem
+      key: pki/server/cp-a/server-key.pem
+      destination:
+        path: /etc/etcd/pki/server.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+    cp-b:
+      cert: pki/server/cp-b/server.pem
+      key: pki/server/cp-b/server-key.pem
+      destination:
+        path: /etc/etcd/pki/server.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+    cp-c:
+      cert: pki/server/cp-c/server.pem
+      key: pki/server/cp-c/server-key.pem
+      destination:
+        path: /etc/etcd/pki/server.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+  sensitive: true
+- name: etcd-peer
+  perNode:
+    cp-a:
+      cert: pki/peer/cp-a/peer.pem
+      key: pki/peer/cp-a/peer-key.pem
+      destination:
+        path: /etc/etcd/pki/peer.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+    cp-b:
+      cert: pki/peer/cp-b/peer.pem
+      key: pki/peer/cp-b/peer-key.pem
+      destination:
+        path: /etc/etcd/pki/peer.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+    cp-c:
+      cert: pki/peer/cp-c/peer.pem
+      key: pki/peer/cp-c/peer-key.pem
+      destination:
+        path: /etc/etcd/pki/peer.pem
+      owner: etcd
+      group: etcd
+      mode: "640"
+  sensitive: true
+- name: etcd-client
+  cert: pki/client/etcd-client.pem
+  key: pki/client/etcd-client-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/etcd/pki/etcd-client.pem
+  mode: "640"
+  owner: etcd
+  group: etcd
+  sensitive: true
