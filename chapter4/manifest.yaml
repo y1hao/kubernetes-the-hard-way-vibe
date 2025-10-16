@@ -11,7 +11,7 @@ entries:
       - cp-a
       - cp-b
       - cp-c
-    path: /opt/etcd/bin/etcd
+    path: /usr/local/bin/etcd
   mode: "755"
 - name: etcdctl-binary
   source: bin/etcdctl
@@ -20,7 +20,7 @@ entries:
       - cp-a
       - cp-b
       - cp-c
-    path: /opt/etcd/bin/etcdctl
+    path: /usr/local/bin/etcdctl
   mode: "755"
 - name: etcd-systemd-unit
   source: config/systemd/etcd.service
