@@ -1,0 +1,20 @@
+{
+  "hosts": [
+    "api.kthw.lab",
+    "10.240.16.10",
+    "10.240.48.10",
+    "10.240.80.10",
+    "127.0.0.1",
+    "cp-a",
+    "cp-b",
+    "cp-c",
+    "cp-a.kthw.lab",
+    "cp-b.kthw.lab",
+    "cp-c.kthw.lab",
+    "kubernetes",
+    "kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster.local",
+    "10.32.0.1"
+  ]
+}

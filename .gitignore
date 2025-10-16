@@ -4,3 +4,7 @@ chapter1/kthw-lab.pub
 .terraform/
 **/terraform.tfstate
 **/terraform.tfstate.*
+chapter3/pki/**/*-key.pem
+chapter3/encryption/keys/
+chapter3/encryption/encryption-config.yaml
+**/*.pem

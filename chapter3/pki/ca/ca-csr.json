@@ -1,0 +1,19 @@
+{
+  "CN": "kthw-root",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "O": "KTHW Lab",
+      "OU": "PKI",
+      "L": "Auckland",
+      "ST": "Auckland",
+      "C": "NZ"
+    }
+  ],
+  "ca": {
+    "expiry": "87600h"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "CN": "system:node:cp-a",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "O": "system:nodes"
+    }
+  ],
+  "hosts": [
+    "cp-a",
+    "cp-a.kthw.lab",
+    "10.240.16.10"
+  ]
+}

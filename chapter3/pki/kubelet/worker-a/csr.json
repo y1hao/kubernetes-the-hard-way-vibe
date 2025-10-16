@@ -1,0 +1,17 @@
+{
+  "CN": "system:node:worker-a",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "O": "system:nodes"
+    }
+  ],
+  "hosts": [
+    "worker-a",
+    "worker-a.kthw.lab",
+    "10.240.16.20"
+  ]
+}

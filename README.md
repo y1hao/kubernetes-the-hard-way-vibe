@@ -47,3 +47,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Recorded Chapter 2 provisioning choices in `ADRs/001-chapter2-node-provisioning-decisions.md` and later right-sized the worker fleet via `ADRs/002-chapter2-worker-sizing-adjustment.md`, updating `DECISIONS.md` accordingly.
 - Built `chapter2/terraform/` to launch 3× control-plane `t3.medium` instances and 2× worker `t3.small` instances with 20 GiB gp3 roots using cloud-init templates and dynamic Ubuntu 22.04 AMI discovery via SSM.
 - Added committed ops assets: role-specific cloud-init (`chapter2/cloud-init/`), a static inventory (`chapter2/inventory.yaml`), and a bastion-run validation script (`chapter2/scripts/validate_nodes.sh`).
+
+### Chapter 3
+
+- Logged PKI strategy in `ADRs/003-chapter3-pki-decisions.md` and expanded `.gitignore` to keep generated secrets out of version control.
+- Produced full PKI inventory under `chapter3/pki/` using `cfssl`, including apiserver, component, admin, and per-node kubelet certificates with documented SAN coverage.
+- Generated secrets encryption material in `chapter3/encryption/`, drafted distribution/rotation guidance (`chapter3/pki/manifest.yaml`, `chapter3/REVOCATION.md`), and captured execution notes in `chapter3/README.md`.

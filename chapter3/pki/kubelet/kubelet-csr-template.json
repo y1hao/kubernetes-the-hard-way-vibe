@@ -1,0 +1,17 @@
+{
+  "CN": "system:node:__NODE_NAME__",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "O": "system:nodes"
+    }
+  ],
+  "hosts": [
+    "__NODE_HOSTNAME__",
+    "__NODE_FQDN__",
+    "__NODE_IP__"
+  ]
+}
