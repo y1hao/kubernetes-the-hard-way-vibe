@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-"""Distribute Chapter 3 PKI assets from the bastion host to target nodes.
+"""Distribute cluster assets (PKI, etcd, configs) from the bastion host to nodes.
 
-Reads `chapter3/pki/manifest.yaml` and `chapter2/inventory.yaml` to copy the
-required certificates, keys, and encryption config to each node. Designed to run
-from the bastion after the repository has been copied there.
+Reads one or more manifest files describing the artefacts that need to be copied
+and leverages `chapter2/inventory.yaml` for node addressing. Designed to run
+from the bastion after the repository has been synchronised there.
 """
 
 import argparse
-import os
 import subprocess
 import sys
-import tempfile
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable, List, Optional
 
 try:
     import yaml  # type: ignore
@@ -22,13 +21,21 @@ except ImportError as exc:  # pragma: no cover
     raise SystemExit(1) from exc
 
 
+DEFAULT_OWNER = "root"
+DEFAULT_GROUP = "root"
+
+
 @dataclass
 class Task:
     node: str
     destination: Path
     source: Path
-    mode: str
+    mode: Optional[str]
+    owner: str
+    group: str
     is_local: bool
+    is_directory: bool
+    sensitive: bool
 
 
 def load_yaml(path: Path):
@@ -48,131 +55,351 @@ def is_private_key(path: Path) -> bool:
     return path.name.endswith("-key.pem") or path.suffix == ".key"
 
 
-def determine_mode(source: Path, explicit_sensitive: bool = False) -> str:
-    if explicit_sensitive or is_private_key(source):
+def determine_mode(source: Path, *, sensitive: bool, is_directory: bool) -> str:
+    if is_directory:
+        return "755"
+    if sensitive or is_private_key(source):
         return "600"
     return "644"
 
 
-def task_from_entry(manifest_root: Path, entry: dict, node: str, base_dest: Path, is_sensitive: bool = False):
-    tasks = []
+def create_file_task(
+    *,
+    node: str,
+    source: Path,
+    destination: Path,
+    explicit_mode: Optional[str],
+    owner: str,
+    group: str,
+    is_local: bool,
+    sensitive: bool,
+) -> Task:
+    mode = explicit_mode or determine_mode(source, sensitive=sensitive, is_directory=False)
+    return Task(
+        node=node,
+        destination=destination,
+        source=source,
+        mode=mode,
+        owner=owner,
+        group=group,
+        is_local=is_local,
+        is_directory=False,
+        sensitive=sensitive,
+    )
 
-    if "cert" in entry:
-        cert_source = (manifest_root / entry["cert"]).resolve()
+
+def create_directory_task(
+    *,
+    node: str,
+    source: Path,
+    destination: Path,
+    explicit_mode: Optional[str],
+    owner: str,
+    group: str,
+    is_local: bool,
+    sensitive: bool,
+) -> Task:
+    mode = explicit_mode or determine_mode(source, sensitive=sensitive, is_directory=True)
+    return Task(
+        node=node,
+        destination=destination,
+        source=source,
+        mode=mode,
+        owner=owner,
+        group=group,
+        is_local=is_local,
+        is_directory=True,
+        sensitive=sensitive,
+    )
+
+
+def materialise_tasks(
+    *,
+    manifest_root: Path,
+    entry: dict,
+    node: str,
+    destination_path: Path,
+    owner: str,
+    group: str,
+    mode: Optional[str],
+    sensitive: bool,
+) -> List[Task]:
+    tasks: List[Task] = []
+    is_local = node == "bastion"
+
+    def ensure_path(value: Optional[str]) -> Optional[Path]:
+        if not value:
+            return None
+        return (manifest_root / value).resolve()
+
+    cert_path = ensure_path(entry.get("cert"))
+    key_path = ensure_path(entry.get("key"))
+    file_path = ensure_path(entry.get("file"))
+    generic_path = ensure_path(entry.get("source"))
+    directory_path = ensure_path(entry.get("sourceDir"))
+
+    if cert_path:
         tasks.append(
-            Task(
+            create_file_task(
                 node=node,
-                destination=base_dest,
-                source=cert_source,
-                mode=determine_mode(cert_source, explicit_sensitive=False),
-                is_local=(node == "bastion"),
+                source=cert_path,
+                destination=destination_path,
+                explicit_mode=entry.get("certMode") or mode,
+                owner=entry.get("owner", owner),
+                group=entry.get("group", group),
+                is_local=is_local,
+                sensitive=sensitive,
             )
         )
 
-    if "key" in entry:
-        key_source = (manifest_root / entry["key"]).resolve()
-        dest_dir = base_dest.parent
-        key_dest = dest_dir / key_source.name
+    if key_path:
+        key_dest = destination_path.parent / key_path.name
         tasks.append(
-            Task(
+            create_file_task(
                 node=node,
+                source=key_path,
                 destination=key_dest,
-                source=key_source,
-                mode=determine_mode(key_source, explicit_sensitive=True),
-                is_local=(node == "bastion"),
+                explicit_mode=entry.get("keyMode") or "600",
+                owner=entry.get("owner", owner),
+                group=entry.get("group", group),
+                is_local=is_local,
+                sensitive=True,
             )
         )
 
-    if "file" in entry:
-        file_source = (manifest_root / entry["file"]).resolve()
+    if file_path:
         tasks.append(
-            Task(
+            create_file_task(
                 node=node,
-                destination=base_dest,
-                source=file_source,
-                mode=determine_mode(file_source, explicit_sensitive=True if is_sensitive else False),
-                is_local=(node == "bastion"),
+                source=file_path,
+                destination=destination_path,
+                explicit_mode=entry.get("mode") or mode,
+                owner=entry.get("owner", owner),
+                group=entry.get("group", group),
+                is_local=is_local,
+                sensitive=sensitive,
+            )
+        )
+
+    if generic_path:
+        tasks.append(
+            create_file_task(
+                node=node,
+                source=generic_path,
+                destination=destination_path,
+                explicit_mode=entry.get("mode") or mode,
+                owner=entry.get("owner", owner),
+                group=entry.get("group", group),
+                is_local=is_local,
+                sensitive=sensitive,
+            )
+        )
+
+    if directory_path:
+        tasks.append(
+            create_directory_task(
+                node=node,
+                source=directory_path,
+                destination=destination_path,
+                explicit_mode=entry.get("mode") or mode,
+                owner=entry.get("owner", owner),
+                group=entry.get("group", group),
+                is_local=is_local,
+                sensitive=sensitive,
             )
         )
 
     return tasks
 
 
-def collect_tasks(manifest_path: Path) -> list:
-    manifest = load_yaml(manifest_path)
-    entries = manifest.get("entries", [])
-    manifest_root = manifest_path.parent
-    tasks = []
+def collect_tasks(manifest_paths: Iterable[Path]) -> List[Task]:
+    tasks: List[Task] = []
+    for manifest_path in manifest_paths:
+        manifest = load_yaml(manifest_path)
+        entries = manifest.get("entries", []) or []
+        manifest_root = manifest_path.parent
 
-    for entry in entries:
-        destination_info = entry.get("destination", {})
-        base_path = destination_info.get("path")
-        if not base_path:
-            continue
-        base_dest = Path(base_path)
+        for entry in entries:
+            destination_info = entry.get("destination", {}) or {}
+            base_path = destination_info.get("path")
+            sensitive = entry.get("sensitive", False)
+            default_owner = entry.get("owner", DEFAULT_OWNER)
+            default_group = entry.get("group", DEFAULT_GROUP)
+            default_mode = entry.get("mode")
 
-        sensitive = entry.get("sensitive", False)
-
-        if "perNode" in entry:
-            for node, node_entry in entry["perNode"].items():
-                node_dest_path = Path(node_entry.get("destination", {}).get("path", base_dest))
-                tasks.extend(task_from_entry(manifest_root, node_entry, node, node_dest_path, is_sensitive=sensitive))
-        else:
-            nodes = destination_info.get("nodes", [])
-            for node in nodes:
-                tasks.extend(task_from_entry(manifest_root, entry, node, base_dest, is_sensitive=sensitive))
+            per_node = entry.get("perNode") or {}
+            if per_node:
+                for node, node_entry in per_node.items():
+                    node_dest_raw = node_entry.get("destination", {}).get("path", base_path)
+                    if not node_dest_raw:
+                        continue
+                    node_dest = Path(node_dest_raw)
+                    owner = node_entry.get("owner", default_owner)
+                    group = node_entry.get("group", default_group)
+                    mode = node_entry.get("mode", default_mode)
+                    node_sensitive = node_entry.get("sensitive", sensitive)
+                    tasks.extend(
+                        materialise_tasks(
+                            manifest_root=manifest_root,
+                            entry=node_entry,
+                            node=node,
+                            destination_path=node_dest,
+                            owner=owner,
+                            group=group,
+                            mode=mode,
+                            sensitive=node_sensitive,
+                        )
+                    )
+            else:
+                if not base_path:
+                    continue
+                destination_path = Path(base_path)
+                nodes = destination_info.get("nodes", []) or []
+                for node in nodes:
+                    tasks.extend(
+                        materialise_tasks(
+                            manifest_root=manifest_root,
+                            entry=entry,
+                            node=node,
+                            destination_path=destination_path,
+                            owner=default_owner,
+                            group=default_group,
+                            mode=default_mode,
+                            sensitive=sensitive,
+                        )
+                    )
 
     return tasks
+
+
+def run_local_file(task: Task, dry_run: bool):
+    dest_dir = task.destination.parent
+    commands = [
+        ["sudo", "mkdir", "-p", str(dest_dir)],
+        [
+            "sudo",
+            "install",
+            "-o",
+            task.owner,
+            "-g",
+            task.group,
+            "-m",
+            task.mode or "644",
+            str(task.source),
+            str(task.destination),
+        ],
+    ]
+    for cmd in commands:
+        print(f"[LOCAL] {' '.join(cmd)}")
+        if not dry_run:
+            subprocess.run(cmd, check=True)
+
+
+def run_local_directory(task: Task, dry_run: bool):
+    dest_parent = task.destination.parent
+    commands = [
+        ["sudo", "rm", "-rf", str(task.destination)],
+        ["sudo", "mkdir", "-p", str(dest_parent)],
+        ["sudo", "cp", "-R", str(task.source), str(dest_parent)],
+        [
+            "sudo",
+            "mv",
+            str(dest_parent / task.source.name),
+            str(task.destination),
+        ],
+        [
+            "sudo",
+            "chown",
+            "-R",
+            f"{task.owner}:{task.group}",
+            str(task.destination),
+        ],
+    ]
+    if task.mode:
+        commands.append(["sudo", "chmod", "-R", task.mode, str(task.destination)])
+
+    for cmd in commands:
+        print(f"[LOCAL] {' '.join(cmd)}")
+        if not dry_run:
+            subprocess.run(cmd, check=True)
 
 
 def run_local(task: Task, dry_run: bool):
-    dest_dir = task.destination.parent
-    cmd = ["sudo", "mkdir", "-p", str(dest_dir)]
-    print(f"[LOCAL] {' '.join(cmd)}")
-    if not dry_run:
-        subprocess.run(cmd, check=True)
-
-    install_cmd = [
-        "sudo",
-        "install",
-        "-o",
-        "root",
-        "-g",
-        "root",
-        "-m",
-        task.mode,
-        str(task.source),
-        str(task.destination),
-    ]
-    print(f"[LOCAL] {' '.join(install_cmd)}")
-    if not dry_run:
-        subprocess.run(install_cmd, check=True)
+    if task.is_directory:
+        run_local_directory(task, dry_run)
+    else:
+        run_local_file(task, dry_run)
 
 
 def scp_to_remote(task: Task, node: str, user: str, host: str, key_path: Path, dry_run: bool):
-    remote_tmp = f"/tmp/kthw-pki-{uuid.uuid4().hex}-{task.source.name}"
-    scp_cmd = [
-        "scp",
-        "-i",
-        str(key_path),
-        "-o",
-        "StrictHostKeyChecking=no",
-        "-o",
-        "UserKnownHostsFile=/dev/null",
-        str(task.source),
-        f"{user}@{host}:{remote_tmp}",
-    ]
-    print(f"[{node}] {' '.join(scp_cmd)}")
-    if not dry_run:
-        subprocess.run(scp_cmd, check=True)
+    if task.is_directory:
+        remote_tmp_dir = f"/tmp/kthw-dist-{uuid.uuid4().hex}"
+        ssh_prepare_cmd = [
+            "ssh",
+            "-i",
+            str(key_path),
+            "-o",
+            "StrictHostKeyChecking=no",
+            "-o",
+            "UserKnownHostsFile=/dev/null",
+            f"{user}@{host}",
+            f"mkdir -p {remote_tmp_dir}",
+        ]
+        print(f"[{node}] {' '.join(ssh_prepare_cmd)}")
+        if not dry_run:
+            subprocess.run(ssh_prepare_cmd, check=True)
 
-    remote_dir = task.destination.parent
-    remote_commands = [
-        f"sudo mkdir -p {remote_dir}",
-        f"sudo mv {remote_tmp} {task.destination}",
-        f"sudo chown root:root {task.destination}",
-        f"sudo chmod {task.mode} {task.destination}",
-    ]
+        scp_cmd = [
+            "scp",
+            "-i",
+            str(key_path),
+            "-o",
+            "StrictHostKeyChecking=no",
+            "-o",
+            "UserKnownHostsFile=/dev/null",
+            "-r",
+            str(task.source),
+            f"{user}@{host}:{remote_tmp_dir}/",
+        ]
+        print(f"[{node}] {' '.join(scp_cmd)}")
+        if not dry_run:
+            subprocess.run(scp_cmd, check=True)
+
+        remote_subdir = f"{remote_tmp_dir}/{task.source.name}"
+        remote_commands = [
+            f"sudo rm -rf {task.destination}",
+            f"sudo mkdir -p {task.destination.parent}",
+            f"sudo mv {remote_subdir} {task.destination}",
+            f"sudo chown -R {task.owner}:{task.group} {task.destination}",
+        ]
+        if task.mode:
+            remote_commands.append(f"sudo chmod -R {task.mode} {task.destination}")
+        remote_commands.append(f"rm -rf {remote_tmp_dir}")
+    else:
+        remote_tmp = f"/tmp/kthw-dist-{uuid.uuid4().hex}-{task.source.name}"
+        scp_cmd = [
+            "scp",
+            "-i",
+            str(key_path),
+            "-o",
+            "StrictHostKeyChecking=no",
+            "-o",
+            "UserKnownHostsFile=/dev/null",
+            str(task.source),
+            f"{user}@{host}:{remote_tmp}",
+        ]
+        print(f"[{node}] {' '.join(scp_cmd)}")
+        if not dry_run:
+            subprocess.run(scp_cmd, check=True)
+
+        remote_dir = task.destination.parent
+        remote_commands = [
+            f"sudo mkdir -p {remote_dir}",
+            f"sudo mv {remote_tmp} {task.destination}",
+            f"sudo chown {task.owner}:{task.group} {task.destination}",
+            f"sudo chmod {task.mode or '644'} {task.destination}",
+        ]
+
     ssh_cmd = [
         "ssh",
         "-i",
@@ -189,10 +416,26 @@ def scp_to_remote(task: Task, node: str, user: str, host: str, key_path: Path, d
         subprocess.run(ssh_cmd, check=True)
 
 
+def parse_manifest_args(manifest_args: List[Path]) -> List[Path]:
+    if manifest_args:
+        return [path.resolve() for path in manifest_args]
+    return [Path("chapter3/pki/manifest.yaml").resolve()]
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Distribute PKI assets to nodes")
-    parser.add_argument("--manifest", default="chapter3/pki/manifest.yaml", type=Path)
-    parser.add_argument("--inventory", default="chapter2/inventory.yaml", type=Path)
+    parser = argparse.ArgumentParser(description="Distribute cluster assets to nodes")
+    parser.add_argument(
+        "--manifest",
+        action="append",
+        type=Path,
+        help="Path to a manifest file; repeat for multiple manifests",
+    )
+    parser.add_argument(
+        "--inventory",
+        default=Path("chapter2/inventory.yaml"),
+        type=Path,
+        help="Inventory file describing node addresses",
+    )
     parser.add_argument("--ssh-key", type=Path, help="Path to SSH private key; defaults to inventory metadata")
     parser.add_argument("--user", help="SSH username; defaults to inventory metadata")
     parser.add_argument("--nodes", nargs="*", help="Limit distribution to specific nodes")
@@ -200,10 +443,10 @@ def main():
 
     args = parser.parse_args()
 
-    manifest_path = args.manifest.resolve()
+    manifest_paths = parse_manifest_args(args.manifest or [])
     inventory_path = args.inventory.resolve()
 
-    manifest_tasks = collect_tasks(manifest_path)
+    manifest_tasks = collect_tasks(manifest_paths)
 
     inventory = load_yaml(inventory_path)
     node_map = build_node_map(inventory)
