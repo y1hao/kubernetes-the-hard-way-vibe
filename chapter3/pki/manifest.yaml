@@ -2,81 +2,99 @@ apiVersion: kthw/v1
 kind: PkiDistributionManifest
 metadata:
   chapter: 3
-  generatedAt: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  generatedAt: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 entries:
-  - name: ca
-    cert: ca/ca.pem
-    key: ca/ca-key.pem
-    destination:
-      nodes: [bastion]
-      path: /etc/kubernetes/pki/ca.pem
-    notes: Root CA kept offline; distribute cert only.
-  - name: kube-apiserver
-    cert: apiserver/apiserver.pem
-    key: apiserver/apiserver-key.pem
-    destination:
-      nodes: [cp-a, cp-b, cp-c]
-      path: /var/lib/kubernetes/apiserver.pem
-    notes: Copy cert/key alongside `kube-apiserver` config; requires owner root, mode 600 for key.
-  - name: kube-controller-manager
-    cert: controller-manager/kube-controller-manager.pem
-    key: controller-manager/kube-controller-manager-key.pem
-    destination:
-      nodes: [cp-a, cp-b, cp-c]
-      path: /var/lib/kubernetes/controller-manager.pem
-    notes: Install with kubeconfig creation step.
-  - name: kube-scheduler
-    cert: scheduler/kube-scheduler.pem
-    key: scheduler/kube-scheduler-key.pem
-    destination:
-      nodes: [cp-a, cp-b, cp-c]
-      path: /var/lib/kubernetes/scheduler.pem
-    notes: Install with kubeconfig creation step.
-  - name: kube-proxy
-    cert: kube-proxy/kube-proxy.pem
-    key: kube-proxy/kube-proxy-key.pem
-    destination:
-      nodes: [worker-a, worker-b]
-      path: /var/lib/kube-proxy/kube-proxy.pem
-    notes: Distribute alongside kube-proxy kubeconfig.
-  - name: kubelet
-    perNode:
-      cp-a:
-        cert: kubelet/cp-a/kubelet.pem
-        key: kubelet/cp-a/kubelet-key.pem
-        destination:
-          path: /var/lib/kubelet/kubelet.pem
-      cp-b:
-        cert: kubelet/cp-b/kubelet.pem
-        key: kubelet/cp-b/kubelet-key.pem
-        destination:
-          path: /var/lib/kubelet/kubelet.pem
-      cp-c:
-        cert: kubelet/cp-c/kubelet.pem
-        key: kubelet/cp-c/kubelet-key.pem
-        destination:
-          path: /var/lib/kubelet/kubelet.pem
-      worker-a:
-        cert: kubelet/worker-a/kubelet.pem
-        key: kubelet/worker-a/kubelet-key.pem
-        destination:
-          path: /var/lib/kubelet/kubelet.pem
-      worker-b:
-        cert: kubelet/worker-b/kubelet.pem
-        key: kubelet/worker-b/kubelet-key.pem
-        destination:
-          path: /var/lib/kubelet/kubelet.pem
-    notes: Ensure owner root, mode 600; kubelet kubeconfig references these paths.
-  - name: admin
-    cert: admin/admin.pem
-    key: admin/admin-key.pem
-    destination:
-      nodes: [bastion]
-      path: /home/ubuntu/.kube/admin.pem
-    notes: Local operator kubeconfig uses this cert.
-  - name: encryption-config
-    file: ../encryption/encryption-config.yaml
-    destination:
-      nodes: [cp-a, cp-b, cp-c]
-      path: /var/lib/kubernetes/encryption-config.yaml
-    notes: Copy key separately; set owner root, mode 600.
+- name: ca
+  cert: ca/ca.pem
+  key: ca/ca-key.pem
+  destination:
+    nodes:
+    - bastion
+    path: /etc/kubernetes/pki/ca.pem
+  notes: Root CA kept offline; distribute cert only.
+- name: kube-apiserver
+  cert: apiserver/apiserver.pem
+  key: apiserver/apiserver-key.pem
+  destination:
+    nodes:
+    - cp-a
+    - cp-b
+    - cp-c
+    path: /var/lib/kubernetes/apiserver.pem
+  notes: Copy cert/key alongside `kube-apiserver` config; requires owner root, mode
+    600 for key.
+- name: kube-controller-manager
+  cert: controller-manager/kube-controller-manager.pem
+  key: controller-manager/kube-controller-manager-key.pem
+  destination:
+    nodes:
+    - cp-a
+    - cp-b
+    - cp-c
+    path: /var/lib/kubernetes/controller-manager.pem
+  notes: Install with kubeconfig creation step.
+- name: kube-scheduler
+  cert: scheduler/kube-scheduler.pem
+  key: scheduler/kube-scheduler-key.pem
+  destination:
+    nodes:
+    - cp-a
+    - cp-b
+    - cp-c
+    path: /var/lib/kubernetes/scheduler.pem
+  notes: Install with kubeconfig creation step.
+- name: kube-proxy
+  cert: kube-proxy/kube-proxy.pem
+  key: kube-proxy/kube-proxy-key.pem
+  destination:
+    nodes:
+    - worker-a
+    - worker-b
+    path: /var/lib/kube-proxy/kube-proxy.pem
+  notes: Distribute alongside kube-proxy kubeconfig.
+- name: kubelet
+  perNode:
+    cp-a:
+      cert: kubelet/cp-a/kubelet.pem
+      key: kubelet/cp-a/kubelet-key.pem
+      destination:
+        path: /var/lib/kubelet/kubelet.pem
+    cp-b:
+      cert: kubelet/cp-b/kubelet.pem
+      key: kubelet/cp-b/kubelet-key.pem
+      destination:
+        path: /var/lib/kubelet/kubelet.pem
+    cp-c:
+      cert: kubelet/cp-c/kubelet.pem
+      key: kubelet/cp-c/kubelet-key.pem
+      destination:
+        path: /var/lib/kubelet/kubelet.pem
+    worker-a:
+      cert: kubelet/worker-a/kubelet.pem
+      key: kubelet/worker-a/kubelet-key.pem
+      destination:
+        path: /var/lib/kubelet/kubelet.pem
+    worker-b:
+      cert: kubelet/worker-b/kubelet.pem
+      key: kubelet/worker-b/kubelet-key.pem
+      destination:
+        path: /var/lib/kubelet/kubelet.pem
+  notes: Ensure owner root, mode 600; kubelet kubeconfig references these paths.
+- name: admin
+  cert: admin/admin.pem
+  key: admin/admin-key.pem
+  destination:
+    nodes:
+    - bastion
+    path: /home/ubuntu/.kube/admin.pem
+  notes: Local operator kubeconfig uses this cert.
+- name: encryption-config
+  file: ../encryption/encryption-config.yaml
+  destination:
+    nodes:
+    - cp-a
+    - cp-b
+    - cp-c
+    path: /var/lib/kubernetes/encryption-config.yaml
+  notes: Copy key separately; set owner root, mode 600.
+  sensitive: true

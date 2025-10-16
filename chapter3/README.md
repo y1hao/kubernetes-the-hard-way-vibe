@@ -37,3 +37,16 @@ This chapter establishes the full certificate authority chain, component certifi
 - Private keys (`*-key.pem`), the AES key, and the encryption config are ignored via `.gitignore`; do not commit them.
 - Distribute artifacts according to `chapter3/pki/manifest.yaml`, applying restrictive permissions (`600`) on keys.
 - For rotations or revocations, follow `chapter3/REVOCATION.md` and regenerate affected materials with `cfssl`.
+
+## Distribution Script
+- Running on the bastion, ensure the repo (including generated keys) is present and `PyYAML` is available (`pip install pyyaml` if needed).
+- From the repository root, execute a dry run to review actions:
+  ```bash
+  python3 chapter3/scripts/distribute_pki.py --dry-run
+  ```
+- Distribute to all nodes:
+  ```bash
+  python3 chapter3/scripts/distribute_pki.py
+  ```
+  The script reads `chapter3/pki/manifest.yaml` and `chapter2/inventory.yaml`, copies artifacts via `scp`, and moves them into place with `sudo install`. Keys land with mode `600`; public certs use `644`.
+- Target specific nodes with `--nodes cp-a worker-a`, override SSH options with `--ssh-key` or `--user`, and re-run as needed after rotations.
