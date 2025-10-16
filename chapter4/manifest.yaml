@@ -34,28 +34,28 @@ entries:
 - name: etcd-env
   perNode:
     cp-a:
-      source: env/cp-a.env
+      source: config/env/cp-a.env
       destination:
         path: /etc/etcd/etcd.env
       mode: "640"
       owner: etcd
       group: etcd
     cp-b:
-      source: env/cp-b.env
+      source: config/env/cp-b.env
       destination:
         path: /etc/etcd/etcd.env
       mode: "640"
       owner: etcd
       group: etcd
     cp-c:
-      source: env/cp-c.env
+      source: config/env/cp-c.env
       destination:
         path: /etc/etcd/etcd.env
       mode: "640"
       owner: etcd
       group: etcd
 - name: etcdctl-env
-  source: etcdctl/etcdctl.env
+  source: config/etcdctl/etcdctl.env
   destination:
     nodes:
       - cp-a
