@@ -1,0 +1,20 @@
+{
+  "CN": "cp-c",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "O": "kthw-etcd",
+      "OU": "Peer"
+    }
+  ],
+  "hosts": [
+    "127.0.0.1",
+    "localhost",
+    "cp-c",
+    "cp-c.kthw.lab",
+    "10.240.80.10"
+  ]
+}

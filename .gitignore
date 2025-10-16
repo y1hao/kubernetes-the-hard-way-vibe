@@ -8,3 +8,4 @@ chapter3/pki/**/*-key.pem
 chapter3/encryption/keys/
 chapter3/encryption/encryption-config.yaml
 **/*.pem
+chapter4/pki/**/*-key.pem
