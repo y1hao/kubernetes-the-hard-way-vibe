@@ -6,6 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=notify
+TimeoutStartSec=0
 User=etcd
 Group=etcd
 EnvironmentFile=-/etc/etcd/etcd.env
