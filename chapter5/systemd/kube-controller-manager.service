@@ -7,7 +7,7 @@ Requires=kube-apiserver.service
 [Service]
 User=kube-controller-manager
 Group=kube-controller-manager
-Type=notify
+Type=exec
 EnvironmentFile=/etc/kubernetes/kube-controller-manager/kube-controller-manager.env
 ExecStart=/usr/local/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_OPTS
 Restart=on-failure
