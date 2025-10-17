@@ -68,6 +68,35 @@ verify_files() {
   fi
 }
 
+render_kube_apiserver_env() {
+  local node_env="/etc/kubernetes/kube-apiserver/node.env"
+  local apiserver_env="/etc/kubernetes/kube-apiserver/kube-apiserver.env"
+  if [[ ! -f "${node_env}" || ! -f "${apiserver_env}" ]]; then
+    echo "[ERROR] kube-apiserver environment files missing" >&2
+    exit 1
+  fi
+
+  local node_ip
+  node_ip="$(grep -E '^NODE_INTERNAL_IP=' "${node_env}" | tail -n1 | cut -d'=' -f2- | tr -d '"')"
+  if [[ -z "${node_ip}" ]]; then
+    echo "[ERROR] NODE_INTERNAL_IP not set in ${node_env}" >&2
+    exit 1
+  fi
+
+  NODE_IP="${node_ip}" python3 - <<'PY'
+import os
+from pathlib import Path
+
+env_path = Path("/etc/kubernetes/kube-apiserver/kube-apiserver.env")
+needle = "${NODE_INTERNAL_IP}"
+text = env_path.read_text()
+node_ip = os.environ["NODE_IP"]
+
+if needle in text:
+    env_path.write_text(text.replace(needle, node_ip))
+PY
+}
+
 fix_permissions() {
   chmod 640 /etc/kubernetes/kube-apiserver/*.env /etc/kubernetes/kube-controller-manager/*.env /etc/kubernetes/kube-scheduler/*.env
 
@@ -105,6 +134,7 @@ main() {
     ensure_user "${user}"
   done
   verify_files
+  render_kube_apiserver_env
   fix_permissions
   start_services
   echo "[INFO] Control plane services started"
