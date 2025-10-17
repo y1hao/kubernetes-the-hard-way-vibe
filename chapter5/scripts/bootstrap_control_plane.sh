@@ -29,6 +29,18 @@ ensure_directories() {
   mkdir -p /etc/kubernetes/kube-apiserver /etc/kubernetes/kube-controller-manager /etc/kubernetes/kube-scheduler
 }
 
+copy_etcd_ca() {
+  local src="/etc/etcd/pki/ca.pem"
+  local dest="/var/lib/kubernetes/etcd-ca.pem"
+  if [[ -f "${src}" ]]; then
+    cp "${src}" "${dest}"
+    chown kube-apiserver:kube-apiserver "${dest}"
+    chmod 644 "${dest}"
+  else
+    echo "[WARN] etcd CA not found at ${src}; kube-apiserver may fail to start" >&2
+  fi
+}
+
 verify_files() {
   local missing=()
   for bin in "${REQUIRED_BINARIES[@]}"; do
@@ -141,6 +153,7 @@ main() {
     ensure_user "${user}"
   done
   verify_files
+  copy_etcd_ca
   render_kube_apiserver_env
   fix_permissions
   start_services
