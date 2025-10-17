@@ -1,0 +1,262 @@
+apiVersion: kthw/v1
+kind: DistributionManifest
+metadata:
+  chapter: 5
+  generatedAt: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+entries:
+- name: kube-apiserver-binary
+  source: bin/kube-apiserver
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /usr/local/bin/kube-apiserver
+  mode: "755"
+- name: kube-controller-manager-binary
+  source: bin/kube-controller-manager
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /usr/local/bin/kube-controller-manager
+  mode: "755"
+- name: kube-scheduler-binary
+  source: bin/kube-scheduler
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /usr/local/bin/kube-scheduler
+  mode: "755"
+- name: kubectl-binary
+  source: bin/kubectl
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+      - bastion
+    path: /usr/local/bin/kubectl
+  mode: "755"
+- name: kube-apiserver-env
+  source: config/kube-apiserver/kube-apiserver.env
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/kubernetes/kube-apiserver/kube-apiserver.env
+  mode: "640"
+- name: kube-apiserver-node-env
+  perNode:
+    cp-a:
+      source: config/kube-apiserver/node-cp-a.env
+      destination:
+        path: /etc/kubernetes/kube-apiserver/node.env
+      mode: "640"
+    cp-b:
+      source: config/kube-apiserver/node-cp-b.env
+      destination:
+        path: /etc/kubernetes/kube-apiserver/node.env
+      mode: "640"
+    cp-c:
+      source: config/kube-apiserver/node-cp-c.env
+      destination:
+        path: /etc/kubernetes/kube-apiserver/node.env
+      mode: "640"
+- name: kube-controller-manager-env
+  source: config/kube-controller-manager/kube-controller-manager.env
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/kubernetes/kube-controller-manager/kube-controller-manager.env
+  mode: "640"
+- name: kube-scheduler-env
+  source: config/kube-scheduler/kube-scheduler.env
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/kubernetes/kube-scheduler/kube-scheduler.env
+  mode: "640"
+- name: kube-apiserver-service
+  source: systemd/kube-apiserver.service
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/systemd/system/kube-apiserver.service
+  mode: "644"
+- name: kube-controller-manager-service
+  source: systemd/kube-controller-manager.service
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/systemd/system/kube-controller-manager.service
+  mode: "644"
+- name: kube-scheduler-service
+  source: systemd/kube-scheduler.service
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/systemd/system/kube-scheduler.service
+  mode: "644"
+- name: service-account-keys
+  perNode:
+    cp-a:
+      source: pki/service-account.key
+      destination:
+        path: /var/lib/kubernetes/service-account.key
+      owner: root
+      group: root
+      mode: "600"
+      sensitive: true
+    cp-b:
+      source: pki/service-account.key
+      destination:
+        path: /var/lib/kubernetes/service-account.key
+      owner: root
+      group: root
+      mode: "600"
+      sensitive: true
+    cp-c:
+      source: pki/service-account.key
+      destination:
+        path: /var/lib/kubernetes/service-account.key
+      owner: root
+      group: root
+      mode: "600"
+      sensitive: true
+- name: service-account-pub
+  source: pki/service-account.pub
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/service-account.pub
+  mode: "644"
+- name: kube-controller-manager-kubeconfig
+  source: kubeconfigs/kube-controller-manager.kubeconfig
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/kube-controller-manager.kubeconfig
+  mode: "600"
+- name: kube-scheduler-kubeconfig
+  source: kubeconfigs/kube-scheduler.kubeconfig
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/kube-scheduler.kubeconfig
+  mode: "600"
+- name: admin-kubeconfig
+  source: kubeconfigs/admin.kubeconfig
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/admin.kubeconfig
+  mode: "600"
+- name: ca-cert
+  source: ../chapter3/pki/ca/ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/ca.pem
+  mode: "644"
+- name: ca-key
+  source: ../chapter3/pki/ca/ca-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/ca-key.pem
+  mode: "600"
+  sensitive: true
+- name: apiserver-cert
+  source: ../chapter3/pki/apiserver/apiserver.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/apiserver.pem
+  mode: "644"
+- name: apiserver-key
+  source: ../chapter3/pki/apiserver/apiserver-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/apiserver-key.pem
+  mode: "600"
+  sensitive: true
+- name: controller-manager-cert
+  source: ../chapter3/pki/controller-manager/kube-controller-manager.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/controller-manager.pem
+  mode: "644"
+- name: controller-manager-key
+  source: ../chapter3/pki/controller-manager/kube-controller-manager-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/controller-manager-key.pem
+  mode: "600"
+  sensitive: true
+- name: scheduler-cert
+  source: ../chapter3/pki/scheduler/kube-scheduler.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/kube-scheduler.pem
+  mode: "644"
+- name: scheduler-key
+  source: ../chapter3/pki/scheduler/kube-scheduler-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/kube-scheduler-key.pem
+  mode: "600"
+  sensitive: true
+- name: encryption-config
+  source: ../chapter3/encryption/encryption-config.yaml
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/encryption-config.yaml
+  mode: "600"
+  sensitive: true
