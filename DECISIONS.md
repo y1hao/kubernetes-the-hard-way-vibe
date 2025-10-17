@@ -6,3 +6,4 @@
 
 - [Chapter 3 PKI Decisions](ADRs/003-chapter3-pki-decisions.md) — PKI tooling, CA structure, naming, and artifact layout for Chapter 3.
 - [Chapter 4 etcd Decisions](ADRs/004-chapter4-etcd-decisions.md) — etcd release selection, data placement, TLS issuance strategy, and distribution tooling approach.
+- [Chapter 5 Control Plane Decisions](ADRs/005-chapter5-control-plane-decisions.md) — Kubernetes release, filesystem layout, runtime identities, kubectl distribution, and core API/controller configuration flags.
