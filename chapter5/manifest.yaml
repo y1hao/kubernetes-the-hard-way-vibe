@@ -190,9 +190,9 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/ca.pem
-  owner: kube-controller-manager
-  group: kube-controller-manager
-  mode: "640"
+  owner: root
+  group: root
+  mode: "644"
 - name: ca-key
   source: ../chapter3/pki/ca/ca-key.pem
   destination:
@@ -213,8 +213,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/apiserver.pem
-  owner: kube-scheduler
-  group: kube-scheduler
+  owner: kube-apiserver
+  group: kube-apiserver
   mode: "640"
 - name: apiserver-key
   source: ../chapter3/pki/apiserver/apiserver-key.pem
@@ -224,8 +224,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/apiserver-key.pem
-  owner: kube-scheduler
-  group: kube-scheduler
+  owner: kube-apiserver
+  group: kube-apiserver
   mode: "600"
   sensitive: true
 - name: controller-manager-cert
@@ -236,7 +236,9 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/controller-manager.pem
-  mode: "644"
+  owner: kube-controller-manager
+  group: kube-controller-manager
+  mode: "640"
 - name: controller-manager-key
   source: ../chapter3/pki/controller-manager/kube-controller-manager-key.pem
   destination:
@@ -257,7 +259,9 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/kube-scheduler.pem
-  mode: "644"
+  owner: kube-scheduler
+  group: kube-scheduler
+  mode: "640"
 - name: scheduler-key
   source: ../chapter3/pki/scheduler/kube-scheduler-key.pem
   destination:
@@ -266,6 +270,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/kube-scheduler-key.pem
+  owner: kube-scheduler
+  group: kube-scheduler
   mode: "600"
   sensitive: true
 - name: encryption-config
@@ -276,5 +282,7 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/encryption-config.yaml
+  owner: kube-apiserver
+  group: kube-apiserver
   mode: "600"
   sensitive: true
