@@ -179,8 +179,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/admin.kubeconfig
-  owner: kube-apiserver
-  group: kube-apiserver
+  owner: root
+  group: root
   mode: "600"
 - name: ca-cert
   source: ../chapter3/pki/ca/ca.pem

@@ -107,7 +107,7 @@ fix_permissions() {
   chown kube-apiserver:kube-controller-manager /var/lib/kubernetes/service-account.key
   chmod 640 /var/lib/kubernetes/service-account.key
   chown kube-controller-manager:kube-controller-manager /var/lib/kubernetes/service-account.pub
-  chmod 644 /var/lib/kubernetes/service-account.pub
+  chmod 640 /var/lib/kubernetes/service-account.pub
 
   chown kube-controller-manager:kube-controller-manager /var/lib/kubernetes/controller-manager.pem /var/lib/kubernetes/controller-manager-key.pem /var/lib/kubernetes/kube-controller-manager.kubeconfig /var/lib/kubernetes/ca-key.pem
   chmod 640 /var/lib/kubernetes/controller-manager.pem
@@ -117,6 +117,7 @@ fix_permissions() {
   chmod 640 /var/lib/kubernetes/kube-scheduler.pem
   chmod 600 /var/lib/kubernetes/kube-scheduler-key.pem /var/lib/kubernetes/kube-scheduler.kubeconfig
 
+  chown kube-apiserver:kube-apiserver /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
   chmod 600 /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
 }
 
