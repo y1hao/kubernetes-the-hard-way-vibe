@@ -118,25 +118,25 @@ entries:
       source: pki/service-account.key
       destination:
         path: /var/lib/kubernetes/service-account.key
-      owner: root
-      group: root
-      mode: "600"
+      owner: kube-apiserver
+      group: kube-controller-manager
+      mode: "640"
       sensitive: true
     cp-b:
       source: pki/service-account.key
       destination:
         path: /var/lib/kubernetes/service-account.key
-      owner: root
-      group: root
-      mode: "600"
+      owner: kube-apiserver
+      group: kube-controller-manager
+      mode: "640"
       sensitive: true
     cp-c:
       source: pki/service-account.key
       destination:
         path: /var/lib/kubernetes/service-account.key
-      owner: root
-      group: root
-      mode: "600"
+      owner: kube-apiserver
+      group: kube-controller-manager
+      mode: "640"
       sensitive: true
 - name: service-account-pub
   source: pki/service-account.pub
@@ -146,6 +146,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/service-account.pub
+  owner: kube-controller-manager
+  group: kube-controller-manager
   mode: "644"
 - name: kube-controller-manager-kubeconfig
   source: kubeconfigs/kube-controller-manager.kubeconfig
@@ -155,6 +157,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/kube-controller-manager.kubeconfig
+  owner: kube-controller-manager
+  group: kube-controller-manager
   mode: "600"
 - name: kube-scheduler-kubeconfig
   source: kubeconfigs/kube-scheduler.kubeconfig
@@ -164,6 +168,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/kube-scheduler.kubeconfig
+  owner: kube-scheduler
+  group: kube-scheduler
   mode: "600"
 - name: admin-kubeconfig
   source: kubeconfigs/admin.kubeconfig
@@ -173,6 +179,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/admin.kubeconfig
+  owner: kube-apiserver
+  group: kube-apiserver
   mode: "600"
 - name: ca-cert
   source: ../chapter3/pki/ca/ca.pem
@@ -182,7 +190,9 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/ca.pem
-  mode: "644"
+  owner: kube-controller-manager
+  group: kube-controller-manager
+  mode: "640"
 - name: ca-key
   source: ../chapter3/pki/ca/ca-key.pem
   destination:
@@ -191,6 +201,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/ca-key.pem
+  owner: kube-controller-manager
+  group: kube-controller-manager
   mode: "600"
   sensitive: true
 - name: apiserver-cert
@@ -201,7 +213,9 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/apiserver.pem
-  mode: "644"
+  owner: kube-scheduler
+  group: kube-scheduler
+  mode: "640"
 - name: apiserver-key
   source: ../chapter3/pki/apiserver/apiserver-key.pem
   destination:
@@ -210,6 +224,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/apiserver-key.pem
+  owner: kube-scheduler
+  group: kube-scheduler
   mode: "600"
   sensitive: true
 - name: controller-manager-cert
@@ -229,6 +245,8 @@ entries:
       - cp-b
       - cp-c
     path: /var/lib/kubernetes/controller-manager-key.pem
+  owner: kube-controller-manager
+  group: kube-controller-manager
   mode: "600"
   sensitive: true
 - name: scheduler-cert
