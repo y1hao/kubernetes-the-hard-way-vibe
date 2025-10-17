@@ -15,6 +15,8 @@
 - etcd members respond to health checks, although occasional `transport is closing` warnings continue to appear in the etcd logs when the API server times out.
 
 ### Outstanding Work
-- Diagnose and eliminate the remaining API server handler timeouts (likely related to intermittent etcd RPC closures) so controller-manager can maintain its leader lease.
-- Once cp-a is stable, replay the refreshed bootstrap/distribution workflow on cp-b and cp-c and verify all three control-plane nodes converge cleanly.
-- After services are stable on all nodes, run Chapter 5 validation commands (`healthz`, `componentstatuses`, etc.) and capture results for documentation.
+- ✅ Resolved: API server handler timeouts and the controller-manager crash loop were fixed by correcting systemd unit types, removing the deprecated `--cloud-provider=none` flag, and rerunning the bootstrap workflow to reset file ownership.
+- ✅ Resolved: cp-b and cp-c have been bootstrapped with the same distribution + user creation steps; all three control planes report healthy services and `/healthz?verbose`.
+- ✅ Resolved: Chapter 5 validation commands have been captured in `chapter5/README.md`.
+
+> **Note:** This WIP log is now frozen for posterity. The outstanding items listed here have been addressed, and future tweaks should be tracked through new entries or commit logs instead of updating this section.

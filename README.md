@@ -59,3 +59,10 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Brought up the three-node etcd cluster (v3.5.12) with TLS on all control-plane nodes using the Chapter 3 CA and staged binaries under `chapter4/bin/`.
 - Extended the manifest-driven distribution tooling and added `chapter4/scripts/bootstrap_etcd_node.sh` to standardise service bring-up.
 - Documented validation flows (`etcdctl endpoint status/health`, `member list`) and captured implementation notes in `chapter4/README.md`.
+
+### Chapter 5
+
+- Finalised control-plane assets under `chapter5/`, including env files, systemd units, distribution manifest, and an idempotent bootstrap script aligned with ADR 005.
+- Removed the obsolete `--cloud-provider=none` flag, converted controller-manager/scheduler units to `Type=exec`, and fixed kube-apiserver advertising/permissions to eliminate handler timeouts.
+- From the bastion ran `distribute_control_plane.sh --nodes <cp>` followed by `bootstrap_control_plane.sh` on each control-plane node (cp-a/b/c), confirmed services via `systemctl status`, and verified `/healthz?verbose`.
+
