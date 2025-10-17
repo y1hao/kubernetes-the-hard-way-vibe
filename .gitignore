@@ -9,3 +9,5 @@ chapter3/encryption/keys/
 chapter3/encryption/encryption-config.yaml
 **/*.pem
 chapter4/pki/**/*-key.pem
+chapter5/artifacts/
+chapter5/bin/

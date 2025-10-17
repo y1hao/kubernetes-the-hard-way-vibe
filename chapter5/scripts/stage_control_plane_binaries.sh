@@ -23,6 +23,15 @@ VERSION="${1:-${DEFAULT_VERSION}}"
 DOWNLOAD_URL="https://dl.k8s.io/release/${VERSION}/${ARCHIVE_NAME}"
 TARBALL_PATH="${ARTIFACT_DIR}/${ARCHIVE_NAME}"
 REQUIRED_BINARIES=(kube-apiserver kube-controller-manager kube-scheduler kubectl)
+TEMP_DIR=""
+
+cleanup() {
+  if [[ -n "${TEMP_DIR:-}" && -d "${TEMP_DIR}" ]]; then
+    rm -rf "${TEMP_DIR}"
+  fi
+}
+
+trap cleanup EXIT
 
 mkdir -p "${ARTIFACT_DIR}" "${BIN_DIR}"
 
@@ -57,13 +66,11 @@ verify_checksum() {
 }
 
 extract_binaries() {
-  local temp_dir
-  temp_dir="$(mktemp -d)"
-  trap 'rm -rf "${temp_dir}"' EXIT
+  TEMP_DIR="$(mktemp -d)"
 
-  tar -C "${temp_dir}" -xzf "${TARBALL_PATH}"
+  tar -C "${TEMP_DIR}" -xzf "${TARBALL_PATH}"
 
-  local src_dir="${temp_dir}/kubernetes/server/bin"
+  local src_dir="${TEMP_DIR}/kubernetes/server/bin"
   for bin in "${REQUIRED_BINARIES[@]}"; do
     if [[ ! -f "${src_dir}/${bin}" ]]; then
       echo "[ERROR] Required binary ${bin} not found in archive." >&2
