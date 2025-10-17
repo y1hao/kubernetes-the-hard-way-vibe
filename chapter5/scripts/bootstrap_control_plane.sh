@@ -90,6 +90,10 @@ render_kube_apiserver_env() {
 fix_permissions() {
   chmod 640 /etc/kubernetes/kube-apiserver/*.env /etc/kubernetes/kube-controller-manager/*.env /etc/kubernetes/kube-scheduler/*.env
 
+  if [[ -f /etc/etcd/pki/ca.pem ]]; then
+    chmod 644 /etc/etcd/pki/ca.pem
+  fi
+
   chown kube-apiserver:kube-apiserver /var/lib/kubernetes/apiserver.pem /var/lib/kubernetes/apiserver-key.pem
   chmod 640 /var/lib/kubernetes/apiserver.pem
   chmod 600 /var/lib/kubernetes/apiserver-key.pem
