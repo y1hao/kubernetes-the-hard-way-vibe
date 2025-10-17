@@ -23,7 +23,7 @@ ensure_user() {
 
 ensure_directories() {
   mkdir -p /var/lib/kubernetes
-  chmod 750 /var/lib/kubernetes
+  chmod 755 /var/lib/kubernetes
   chown root:root /var/lib/kubernetes
 
   mkdir -p /etc/kubernetes/kube-apiserver /etc/kubernetes/kube-controller-manager /etc/kubernetes/kube-scheduler
