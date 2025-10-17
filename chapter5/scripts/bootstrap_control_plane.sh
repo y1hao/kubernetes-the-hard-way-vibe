@@ -83,18 +83,8 @@ render_kube_apiserver_env() {
     exit 1
   fi
 
-  NODE_IP="${node_ip}" python3 - <<'PY'
-import os
-from pathlib import Path
-
-env_path = Path("/etc/kubernetes/kube-apiserver/kube-apiserver.env")
-needle = "${NODE_INTERNAL_IP}"
-text = env_path.read_text()
-node_ip = os.environ["NODE_IP"]
-
-if needle in text:
-    env_path.write_text(text.replace(needle, node_ip))
-PY
+  sed -i "s/{{NODE_INTERNAL_IP}}/${node_ip}/g" \
+    /etc/kubernetes/kube-apiserver/kube-apiserver.env
 }
 
 fix_permissions() {
