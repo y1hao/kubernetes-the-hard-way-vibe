@@ -85,6 +85,18 @@ render_kube_apiserver_env() {
 
   sed -i "s/{{NODE_INTERNAL_IP}}/${node_ip}/g" \
     /etc/kubernetes/kube-apiserver/kube-apiserver.env
+
+  ensure_api_hostname "${node_ip}"
+}
+
+ensure_api_hostname() {
+  local node_ip="$1"
+  local hosts_entry
+  hosts_entry="${node_ip} api.kthw.lab"
+
+  if ! grep -q "api.kthw.lab" /etc/hosts; then
+    echo "${hosts_entry}" >> /etc/hosts
+  fi
 }
 
 fix_permissions() {
