@@ -1,0 +1,19 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
+After=network.target etcd.service
+Requires=etcd.service
+
+[Service]
+User=kube-apiserver
+Group=kube-apiserver
+Type=notify
+EnvironmentFile=/etc/kubernetes/kube-apiserver/node.env
+EnvironmentFile=/etc/kubernetes/kube-apiserver/kube-apiserver.env
+ExecStart=/usr/local/bin/kube-apiserver $KUBE_APISERVER_OPTS
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

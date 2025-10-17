@@ -1,0 +1,17 @@
+[Unit]
+Description=Kubernetes Controller Manager
+Documentation=https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
+After=network.target kube-apiserver.service
+Requires=kube-apiserver.service
+
+[Service]
+User=kube-controller-manager
+Group=kube-controller-manager
+Type=notify
+EnvironmentFile=/etc/kubernetes/kube-controller-manager/kube-controller-manager.env
+ExecStart=/usr/local/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_OPTS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

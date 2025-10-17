@@ -1,0 +1,17 @@
+[Unit]
+Description=Kubernetes Scheduler
+Documentation=https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/
+After=network.target kube-apiserver.service
+Requires=kube-apiserver.service
+
+[Service]
+User=kube-scheduler
+Group=kube-scheduler
+Type=notify
+EnvironmentFile=/etc/kubernetes/kube-scheduler/kube-scheduler.env
+ExecStart=/usr/local/bin/kube-scheduler $KUBE_SCHEDULER_OPTS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

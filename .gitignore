@@ -11,5 +11,5 @@ chapter3/encryption/encryption-config.yaml
 chapter4/pki/**/*-key.pem
 chapter5/artifacts/
 chapter5/bin/
+chapter5/pki/
 *.kubeconfig
-
