@@ -7,7 +7,7 @@ Requires=kube-apiserver.service
 [Service]
 User=kube-scheduler
 Group=kube-scheduler
-Type=notify
+Type=exec
 EnvironmentFile=/etc/kubernetes/kube-scheduler/kube-scheduler.env
 ExecStart=/usr/local/bin/kube-scheduler $KUBE_SCHEDULER_OPTS
 Restart=on-failure
