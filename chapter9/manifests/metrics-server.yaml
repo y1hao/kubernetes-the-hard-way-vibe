@@ -193,28 +193,12 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       volumes:
-        - name: kubelet-ca
-          secret:
-            secretName: metrics-server-kubelet-ca
-            items:
-              - key: ca.crt
-                path: ca.crt
         - name: metrics-server-client-cert
           secret:
             secretName: metrics-server-client-cert
-            items:
-              - key: ca.crt
-                path: ca.crt
-              - key: client.crt
-                path: client.crt
-              - key: client.key
-                path: client.key
         - name: metrics-server-kubeconfig
           secret:
             secretName: metrics-server-kubeconfig
-            items:
-              - key: kubeconfig
-                path: kubeconfig
       containers:
         - name: metrics-server
           image: registry.k8s.io/metrics-server/metrics-server:v0.7.2
@@ -251,12 +235,19 @@ spec:
               cpu: 100m
               memory: 200Mi
           volumeMounts:
-            - name: kubelet-ca
-              mountPath: /etc/kubernetes/pki
+            - name: metrics-server-client-cert
+              mountPath: /etc/metrics-server/ca.crt
+              subPath: ca.crt
               readOnly: true
             - name: metrics-server-client-cert
-              mountPath: /etc/metrics-server
+              mountPath: /etc/metrics-server/client.crt
+              subPath: client.crt
+              readOnly: true
+            - name: metrics-server-client-cert
+              mountPath: /etc/metrics-server/client.key
+              subPath: client.key
               readOnly: true
             - name: metrics-server-kubeconfig
-              mountPath: /etc/metrics-server
+              mountPath: /etc/metrics-server/kubeconfig
+              subPath: kubeconfig
               readOnly: true
