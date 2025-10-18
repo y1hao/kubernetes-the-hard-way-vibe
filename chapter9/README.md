@@ -16,7 +16,7 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    ```bash
    KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
    ```
-3. Re-distribute the updated Chapter 5 assets so kube-proxy lands on each control-plane node, then rerun the bootstrap:
+3. Re-distribute the updated Chapter 5 assets so the control-plane nodes pick up kube-proxy, containerd, and kubelet, then rerun the bootstrap:
    ```bash
    ./chapter5/scripts/distribute_control_plane.sh --nodes cp-a cp-b cp-c --ssh-key chapter1/kthw-lab
    for ip in 10.240.16.10 10.240.48.10 10.240.80.10; do
@@ -61,5 +61,5 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
 - Clean up the helper pod after validation with `k delete -f chapter9/validation/test-client.yaml`.
 - BusyBox `nslookup` prefers fully qualified names; use `kubernetes.default.svc.cluster.local` for validation.
 - If the Chapter 3 CA lives outside the repo, override it with `CA_PATH=/path/to/ca.pem KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh`. The script updates both the request-header and client CA data expected by the aggregator.
-- Ensure kube-proxy is running on all control-plane nodes before validating metrics; without it, the apiserver cannot reach ClusterIP-backed aggregated APIs.
+- Ensure containerd/kubelet/kube-proxy are running on all control-plane nodes before validating metrics; without them, the apiserver cannot reach ClusterIP-backed aggregated APIs.
 - Administrative access continues to rely on the default `system:masters` binding.

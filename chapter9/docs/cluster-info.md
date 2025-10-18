@@ -3,7 +3,7 @@
 ## Installed Components
 - **CoreDNS** — `coredns/coredns:v1.11.1`, deployed in `kube-system` with Service VIP `10.32.0.10` for `cluster.local` DNS resolution.
 - **Metrics Server** — `registry.k8s.io/metrics-server/metrics-server:v0.7.2`, running on `hostNetwork: true` so control-plane ClusterIP lookups succeed while scraping kubelets over TLS.
-- **Control-plane kube-proxy** — Chapter 5 now ships kube-proxy to `cp-a/b/c` so ClusterIP services resolve locally for aggregated APIs.
+- **Control-plane kubelet stack** — Chapter 5 now ships containerd, kubelet, and kube-proxy to `cp-a/b/c`, letting the control plane join the pod network for aggregated APIs.
 
 ## Operator Commands
 - DNS health:

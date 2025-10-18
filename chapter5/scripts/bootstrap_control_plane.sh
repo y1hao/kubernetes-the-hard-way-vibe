@@ -28,6 +28,7 @@ ensure_directories() {
 
   mkdir -p /etc/kubernetes/kube-apiserver /etc/kubernetes/kube-controller-manager /etc/kubernetes/kube-scheduler
   mkdir -p /etc/kube-proxy.d /var/lib/kube-proxy/pki
+  mkdir -p /etc/containerd /etc/kubelet.d /var/lib/kubelet/pki /var/lib/kubelet/manifests /run/containerd
 }
 
 copy_etcd_ca() {
@@ -75,6 +76,16 @@ verify_files() {
     /var/lib/kube-proxy/pki/ca.pem
     /var/lib/kube-proxy/pki/kube-proxy.pem
     /var/lib/kube-proxy/pki/kube-proxy-key.pem
+    /etc/containerd/config.toml
+    /var/lib/kubernetes/containerd.tar.gz
+    /var/lib/kubernetes/crictl.tar.gz
+    /etc/kubelet.d/kubelet.env
+    /etc/kubelet.d/node.env
+    /var/lib/kubelet/config.yaml
+    /var/lib/kubelet/kubeconfig
+    /var/lib/kubelet/pki/ca.pem
+    /var/lib/kubelet/pki/kubelet.pem
+    /var/lib/kubelet/pki/kubelet-key.pem
   )
 
   for file in "${required_files[@]}"; do
@@ -84,6 +95,19 @@ verify_files() {
   if (( ${#missing[@]} > 0 )); then
     printf '[ERROR] Missing required assets:\n - %s\n' "${missing[@]}" >&2
     exit 1
+  fi
+}
+
+install_runtime_stack() {
+  local containerd_tar="/var/lib/kubernetes/containerd.tar.gz"
+  local crictl_tar="/var/lib/kubernetes/crictl.tar.gz"
+
+  if [[ -f "${containerd_tar}" ]]; then
+    tar -C /usr/local -xzf "${containerd_tar}"
+  fi
+
+  if [[ -f "${crictl_tar}" ]]; then
+    tar -C /usr/local/bin -xzf "${crictl_tar}"
   fi
 }
 
@@ -148,6 +172,11 @@ fix_permissions() {
   chmod 640 /etc/kube-proxy.d/kube-proxy.env /var/lib/kube-proxy/config.yaml
   chmod 600 /var/lib/kube-proxy/kubeconfig /var/lib/kube-proxy/pki/kube-proxy.pem /var/lib/kube-proxy/pki/kube-proxy-key.pem
   chmod 644 /var/lib/kube-proxy/pki/ca.pem
+
+  chmod 640 /etc/kubelet.d/kubelet.env /var/lib/kubelet/config.yaml
+  chmod 640 /etc/kubelet.d/node.env || true
+  chmod 600 /var/lib/kubelet/kubeconfig /var/lib/kubelet/pki/kubelet.pem /var/lib/kubelet/pki/kubelet-key.pem
+  chmod 644 /var/lib/kubelet/pki/ca.pem
 }
 
 start_services() {
@@ -155,6 +184,8 @@ start_services() {
   systemctl enable --now kube-apiserver.service
   systemctl enable --now kube-controller-manager.service
   systemctl enable --now kube-scheduler.service
+  systemctl enable --now containerd.service
+  systemctl enable --now kubelet.service
   systemctl enable --now kube-proxy.service
 }
 
@@ -166,6 +197,7 @@ main() {
   done
   verify_files
   copy_etcd_ca
+  install_runtime_stack
   render_kube_apiserver_env
   fix_permissions
   start_services

@@ -7,7 +7,7 @@ Chapter 5 focuses on staging the upstream Kubernetes v1.31.1 control plane binar
 - Staged the v1.31.1 control plane binaries under `chapter5/bin/` and authored env files plus systemd units in `chapter5/config/` and `chapter5/systemd/`.
 - Iterated on `bootstrap_control_plane.sh` to copy the etcd CA, normalise ownership, render node-specific settings, and restart the services idempotently.
 - Added request-header CA flags for controller-manager and scheduler, removed the deprecated scheduler `--port` flag, and ensured kube-apiserver references the shared PKI layout under `/var/lib/kubernetes`.
-- Rolled kube-proxy onto the control-plane nodes so ClusterIP traffic (including aggregated APIs such as Metrics Server) resolves locally; manifests now ship the kube-proxy binary/config and the bootstrap script enables the service.
+- Rolled kube-proxy plus the full kubelet/containerd stack onto the control-plane nodes so they participate in the pod network; manifests now ship the runtime binaries/configs and the bootstrap script enables containerd, kubelet, and kube-proxy alongside the core control-plane services.
 - Resolved bring-up regressions by:
   - Dropping the obsolete `--cloud-provider=none` flag from kube-controller-manager.
   - Converting controller-manager and scheduler systemd units to `Type=exec` so systemd stops timing them out.
