@@ -1,0 +1,8 @@
+{
+  "CN": "kubernetes-front-proxy-ca",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": []
+}
