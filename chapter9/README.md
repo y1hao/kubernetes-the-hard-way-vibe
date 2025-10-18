@@ -16,7 +16,7 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    ```bash
    KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
    ```
-3. Apply Metrics Server assets:
+3. Apply Metrics Server assets (APIService uses `insecureSkipTLSVerify: true` to accommodate the self-signed pod certificate):
    ```bash
    k apply -f chapter9/manifests/metrics-server.yaml
    ```
@@ -52,5 +52,5 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
 - Metrics Server talks to kubelets on their secure port using the CA from Chapter 3; no insecure flags are set.
 - Clean up the helper pod after validation with `k delete -f chapter9/validation/test-client.yaml`.
 - BusyBox `nslookup` prefers fully qualified names; use `kubernetes.default.svc.cluster.local` for validation.
-- If the Chapter 3 CA lives outside the repo, override it with `CA_PATH=/path/to/ca.pem KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh`.
+- If the Chapter 3 CA lives outside the repo, override it with `CA_PATH=/path/to/ca.pem KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh`. The script updates both the request-header and client CA data expected by the aggregator.
 - Administrative access continues to rely on the default `system:masters` binding.

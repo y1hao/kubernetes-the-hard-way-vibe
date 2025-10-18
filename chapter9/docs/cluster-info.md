@@ -14,6 +14,11 @@
   ```bash
   k top nodes
   ```
+- Regenerate trust data if needed:
+  ```bash
+  KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
+  ```
+- The APIService is configured with `insecureSkipTLSVerify: true` to tolerate Metrics Server's self-signed certificate; switch to a signed cert before tightening this setting.
 - Refresh aggregator trust bundle when needed:
   ```bash
   KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh

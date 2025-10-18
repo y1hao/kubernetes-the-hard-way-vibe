@@ -56,6 +56,7 @@ fi
 
 $KUBECTL_BIN create configmap extension-apiserver-authentication \
   --namespace kube-system \
+  --from-file=client-ca-file="$CA_PATH" \
   --from-file=requestheader-client-ca-file="$CA_PATH" \
   --from-literal=requestheader-allowed-names='["front-proxy-client"]' \
   --from-literal=requestheader-username-headers='["X-Remote-User"]' \

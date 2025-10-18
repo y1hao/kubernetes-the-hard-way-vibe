@@ -144,7 +144,7 @@ spec:
     port: 443
   group: metrics.k8s.io
   version: v1beta1
-  insecureSkipTLSVerify: false
+  insecureSkipTLSVerify: true
   groupPriorityMinimum: 100
   versionPriority: 100
 ---
