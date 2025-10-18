@@ -181,6 +181,8 @@ spec:
       labels:
         k8s-app: metrics-server
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: metrics-server
       priorityClassName: system-cluster-critical
       nodeSelector:

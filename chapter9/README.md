@@ -24,7 +24,7 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    done
    ```
    _Adjust the SSH key and node IPs to match your environment._
-4. Apply Metrics Server assets:
+4. Apply Metrics Server assets (runs on hostNetwork so control-plane ClusterIP lookups succeed):
    ```bash
    k apply -f chapter9/manifests/metrics-server.yaml
    ```
