@@ -12,6 +12,8 @@ Run the following from the bastion:
   apply -f chapter8/calico.yaml
 ```
 
+> Ensure Chapter 1 security groups permit Calico control traffic on `tcp/179` (BGP) and `udp/4789` (VXLAN) between worker and control plane nodes before applying the manifest.
+
 Expect the kubelet `NotReady` condition to clear once the Calico DaemonSet becomes ready on all nodes.
 
 ## Validation Workflow

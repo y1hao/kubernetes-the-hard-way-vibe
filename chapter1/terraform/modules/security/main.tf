@@ -173,6 +173,46 @@ resource "aws_security_group_rule" "worker_kubelet" {
   description              = "Kubelet API from control plane"
 }
 
+resource "aws_security_group_rule" "worker_bgp_from_workers" {
+  type                     = "ingress"
+  from_port                = 179
+  to_port                  = 179
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Calico BGP mesh between workers"
+}
+
+resource "aws_security_group_rule" "worker_bgp_from_control_plane" {
+  type                     = "ingress"
+  from_port                = 179
+  to_port                  = 179
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Calico BGP from control plane"
+}
+
+resource "aws_security_group_rule" "worker_vxlan_from_workers" {
+  type                     = "ingress"
+  from_port                = 4789
+  to_port                  = 4789
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Calico VXLAN between workers"
+}
+
+resource "aws_security_group_rule" "worker_vxlan_from_control_plane" {
+  type                     = "ingress"
+  from_port                = 4789
+  to_port                  = 4789
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Calico VXLAN from control plane"
+}
+
 resource "aws_security_group_rule" "worker_nodeport" {
   count = length(var.nodeport_source_cidrs) > 0 ? 1 : 0
 
@@ -193,4 +233,44 @@ resource "aws_security_group_rule" "api_nlb_ingress" {
   source_security_group_id = aws_security_group.bastion.id
   security_group_id        = aws_security_group.api_nlb.id
   description              = "Administrative API access via bastion"
+}
+
+resource "aws_security_group_rule" "control_plane_bgp_from_workers" {
+  type                     = "ingress"
+  from_port                = 179
+  to_port                  = 179
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.control_plane.id
+  description              = "Calico BGP from workers"
+}
+
+resource "aws_security_group_rule" "control_plane_bgp_from_control_plane" {
+  type                     = "ingress"
+  from_port                = 179
+  to_port                  = 179
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.control_plane.id
+  description              = "Calico BGP mesh between control plane nodes"
+}
+
+resource "aws_security_group_rule" "control_plane_vxlan_from_workers" {
+  type                     = "ingress"
+  from_port                = 4789
+  to_port                  = 4789
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.control_plane.id
+  description              = "Calico VXLAN from workers"
+}
+
+resource "aws_security_group_rule" "control_plane_vxlan_from_control_plane" {
+  type                     = "ingress"
+  from_port                = 4789
+  to_port                  = 4789
+  protocol                 = "udp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.control_plane.id
+  description              = "Calico VXLAN between control plane nodes"
 }
