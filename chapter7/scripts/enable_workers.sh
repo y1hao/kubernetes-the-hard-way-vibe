@@ -2,7 +2,11 @@
 set -euo pipefail
 
 # Usage: ./enable_workers.sh <node>
-# Expects ssh/scp configured (e.g. via bastion SSH config) and Chapter 3/7 artifacts staged locally.
+# Optional env vars:
+#   KTHW_SSH_KEY   - identity file (default: ../chapter1/kthw-lab)
+#   KTHW_SSH_OPTS  - extra ssh/scp options (e.g. "-o StrictHostKeyChecking=no")
+#   KTHW_SSH_CMD   - override ssh binary (default: ssh)
+#   KTHW_SCP_CMD   - override scp binary (default: scp)
 
 NODE=${1:-}
 if [[ -z "${NODE}" ]]; then
@@ -14,18 +18,32 @@ ARTIFACT_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BIN_DIR="$ARTIFACT_ROOT/bin"
 CONFIG_DIR="$ARTIFACT_ROOT/config"
 KUBECONFIG_DIR="$ARTIFACT_ROOT/kubeconfigs"
-MANIFEST="$ARTIFACT_ROOT/manifest.yaml"
+REPO_ROOT=$(cd "$ARTIFACT_ROOT/.." && pwd)
+IDENTITY=${KTHW_SSH_KEY:-$REPO_ROOT/chapter1/kthw-lab}
+SSH_BASE=${KTHW_SSH_CMD:-ssh}
+SCP_BASE=${KTHW_SCP_CMD:-scp}
+read -r -a EXTRA_OPTS <<< "${KTHW_SSH_OPTS:-}"
+
+SSH_CMD_BASE=("$SSH_BASE" -i "$IDENTITY" "${EXTRA_OPTS[@]}")
+SCP_CMD_BASE=("$SCP_BASE" -i "$IDENTITY" "${EXTRA_OPTS[@]}")
+
+ssh_node() {
+  "${SSH_CMD_BASE[@]}" "$NODE" "$@"
+}
+
+scp_to_node() {
+  local src=$1 dst=$2
+  "${SCP_CMD_BASE[@]}" "$src" "$NODE:$dst"
+}
 
 WORK_DIR="/var/tmp/kthw"
-SSH="ssh ${NODE}"
-SCP="scp"
 
 cleanup_remote() {
-  $SSH sudo rm -rf "$WORK_DIR"
+  ssh_node sudo rm -rf "$WORK_DIR"
 }
 
 prepare_remote() {
-  $SSH sudo mkdir -p \
+  ssh_node sudo mkdir -p \
     /etc/containerd \
     /etc/kubelet.d \
     /etc/kube-proxy.d \
@@ -37,39 +55,39 @@ prepare_remote() {
 
 copy_artifacts() {
   echo "Copying binaries and archives"
-  $SCP "$BIN_DIR/kubelet" "$NODE:$WORK_DIR/"
-  $SCP "$BIN_DIR/kube-proxy" "$NODE:$WORK_DIR/"
-  $SCP "$BIN_DIR/runc" "$NODE:$WORK_DIR/"
-  $SCP "$BIN_DIR/containerd.tar.gz" "$NODE:$WORK_DIR/"
-  $SCP "$BIN_DIR/crictl.tar.gz" "$NODE:$WORK_DIR/"
+  scp_to_node "$BIN_DIR/kubelet" "$WORK_DIR/"
+  scp_to_node "$BIN_DIR/kube-proxy" "$WORK_DIR/"
+  scp_to_node "$BIN_DIR/runc" "$WORK_DIR/"
+  scp_to_node "$BIN_DIR/containerd.tar.gz" "$WORK_DIR/"
+  scp_to_node "$BIN_DIR/crictl.tar.gz" "$WORK_DIR/"
 
   echo "Copying configs"
-  $SCP "$CONFIG_DIR/containerd/config.toml" "$NODE:$WORK_DIR/"
-  $SCP "$CONFIG_DIR/kubelet/config.yaml" "$NODE:$WORK_DIR/"
-  $SCP "$CONFIG_DIR/kubelet/kubelet.env" "$NODE:$WORK_DIR/"
-  $SCP "$CONFIG_DIR/kubelet/${NODE}.env" "$NODE:$WORK_DIR/node.env"
-  $SCP "$CONFIG_DIR/kube-proxy/config.yaml" "$NODE:$WORK_DIR/kube-proxy-config.yaml"
-  $SCP "$CONFIG_DIR/kube-proxy/kube-proxy.env" "$NODE:$WORK_DIR/"
+  scp_to_node "$CONFIG_DIR/containerd/config.toml" "$WORK_DIR/"
+  scp_to_node "$CONFIG_DIR/kubelet/config.yaml" "$WORK_DIR/"
+  scp_to_node "$CONFIG_DIR/kubelet/kubelet.env" "$WORK_DIR/"
+  scp_to_node "$CONFIG_DIR/kubelet/${NODE}.env" "$WORK_DIR/node.env"
+  scp_to_node "$CONFIG_DIR/kube-proxy/config.yaml" "$WORK_DIR/kube-proxy-config.yaml"
+  scp_to_node "$CONFIG_DIR/kube-proxy/kube-proxy.env" "$WORK_DIR/"
 
   echo "Copying kubeconfigs"
-  $SCP "$KUBECONFIG_DIR/${NODE}-kubelet.kubeconfig" "$NODE:$WORK_DIR/kubelet.kubeconfig"
-  $SCP "$KUBECONFIG_DIR/kube-proxy.kubeconfig" "$NODE:$WORK_DIR/"
+  scp_to_node "$KUBECONFIG_DIR/${NODE}-kubelet.kubeconfig" "$WORK_DIR/kubelet.kubeconfig"
+  scp_to_node "$KUBECONFIG_DIR/kube-proxy.kubeconfig" "$WORK_DIR/"
 
   echo "Copying PKI"
-  $SCP chapter3/pki/ca/ca.pem "$NODE:$WORK_DIR/ca.pem"
-  $SCP chapter3/pki/kubelet/${NODE}/kubelet.pem "$NODE:$WORK_DIR/kubelet.pem"
-  $SCP chapter3/pki/kubelet/${NODE}/kubelet-key.pem "$NODE:$WORK_DIR/kubelet-key.pem"
-  $SCP chapter3/pki/kube-proxy/kube-proxy.pem "$NODE:$WORK_DIR/kube-proxy.pem"
-  $SCP chapter3/pki/kube-proxy/kube-proxy-key.pem "$NODE:$WORK_DIR/kube-proxy-key.pem"
+  scp_to_node "$REPO_ROOT/chapter3/pki/ca/ca.pem" "$WORK_DIR/ca.pem"
+  scp_to_node "$REPO_ROOT/chapter3/pki/kubelet/${NODE}/kubelet.pem" "$WORK_DIR/kubelet.pem"
+  scp_to_node "$REPO_ROOT/chapter3/pki/kubelet/${NODE}/kubelet-key.pem" "$WORK_DIR/kubelet-key.pem"
+  scp_to_node "$REPO_ROOT/chapter3/pki/kube-proxy/kube-proxy.pem" "$WORK_DIR/kube-proxy.pem"
+  scp_to_node "$REPO_ROOT/chapter3/pki/kube-proxy/kube-proxy-key.pem" "$WORK_DIR/kube-proxy-key.pem"
 
   echo "Copying systemd units"
-  $SCP "$ARTIFACT_ROOT/systemd/containerd.service" "$NODE:$WORK_DIR/"
-  $SCP "$ARTIFACT_ROOT/systemd/kubelet.service" "$NODE:$WORK_DIR/"
-  $SCP "$ARTIFACT_ROOT/systemd/kube-proxy.service" "$NODE:$WORK_DIR/"
+  scp_to_node "$ARTIFACT_ROOT/systemd/containerd.service" "$WORK_DIR/"
+  scp_to_node "$ARTIFACT_ROOT/systemd/kubelet.service" "$WORK_DIR/"
+  scp_to_node "$ARTIFACT_ROOT/systemd/kube-proxy.service" "$WORK_DIR/"
 }
 
 install_remote() {
-  $SSH <<'EOSSH'
+  ssh_node <<'EOSSH'
 set -euo pipefail
 sudo tar -C /usr/local -xzf /var/tmp/kthw/containerd.tar.gz
 sudo install -m 0755 /var/tmp/kthw/runc /usr/local/sbin/runc
@@ -106,9 +124,9 @@ EOSSH
 }
 
 post_checks() {
-  $SSH sudo systemctl status containerd.service --no-pager
-  $SSH sudo systemctl status kubelet.service --no-pager
-  $SSH sudo systemctl status kube-proxy.service --no-pager
+  ssh_node sudo systemctl status containerd.service --no-pager
+  ssh_node sudo systemctl status kubelet.service --no-pager
+  ssh_node sudo systemctl status kube-proxy.service --no-pager
 }
 
 prepare_remote
@@ -117,4 +135,4 @@ install_remote
 post_checks
 cleanup_remote
 
-kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig get nodes "$NODE"
+kubectl --kubeconfig "$REPO_ROOT/chapter5/kubeconfigs/admin.kubeconfig" get nodes "$NODE"
