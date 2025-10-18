@@ -64,7 +64,7 @@ copy_artifacts() {
   scp_to_node "$BIN_DIR/crictl.tar.gz" "$WORK_DIR/"
 
   echo "Copying configs"
-  scp_to_node "$CONFIG_DIR/containerd/config.toml" "$WORK_DIR/"
+  scp_to_node "$CONFIG_DIR/containerd/config.toml" "$WORK_DIR/config.toml"
   scp_to_node "$CONFIG_DIR/kubelet/config.yaml" "$WORK_DIR/"
   scp_to_node "$CONFIG_DIR/kubelet/kubelet.env" "$WORK_DIR/"
   scp_to_node "$CONFIG_DIR/kubelet/${NODE}.env" "$WORK_DIR/node.env"

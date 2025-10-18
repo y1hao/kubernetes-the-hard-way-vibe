@@ -107,5 +107,5 @@ oom_score = 0
   [plugins."io.containerd.tracing.processor.v1.otlp"]
     endpoint = ""
     insecure = false
-    headers = null
-    attributes = null
+    headers = []
+    attributes = []
