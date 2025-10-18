@@ -9,7 +9,7 @@ spec:
   serviceAccountName: metrics-server
   containers:
     - name: debug
-      image: public.ecr.aws/docker/library/busybox:1.36.1
+      image: alpine:3.19
       command: ["sh", "-c", "sleep 3600"]
       volumeMounts:
         - name: client-cert
