@@ -206,9 +206,9 @@ spec:
           args:
             - --cert-dir=/tmp
             - --secure-port=4443
-            - --kubeconfig=/etc/metrics-server/kubeconfig
+            - --kubeconfig=/etc/metrics-server/kubeconfig/kubeconfig
             - --kubelet-insecure-tls=false
-            - --kubelet-certificate-authority=/etc/metrics-server/ca.crt
+            - --kubelet-certificate-authority=/etc/metrics-server/certs/ca.crt
             - --kubelet-use-node-status-port
             - --metric-resolution=15s
             - --kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS
@@ -236,18 +236,8 @@ spec:
               memory: 200Mi
           volumeMounts:
             - name: metrics-server-client-cert
-              mountPath: /etc/metrics-server/ca.crt
-              subPath: ca.crt
-              readOnly: true
-            - name: metrics-server-client-cert
-              mountPath: /etc/metrics-server/client.crt
-              subPath: client.crt
-              readOnly: true
-            - name: metrics-server-client-cert
-              mountPath: /etc/metrics-server/client.key
-              subPath: client.key
+              mountPath: /etc/metrics-server/certs
               readOnly: true
             - name: metrics-server-kubeconfig
               mountPath: /etc/metrics-server/kubeconfig
-              subPath: kubeconfig
               readOnly: true
