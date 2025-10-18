@@ -35,3 +35,9 @@ variable "nodeport_source_cidrs" {
   type        = list(string)
   default     = []
 }
+
+variable "internal_api_cidr_blocks" {
+  description = "CIDR blocks inside the VPC allowed to reach the kube-apiserver via the load balancer"
+  type        = list(string)
+  default     = []
+}

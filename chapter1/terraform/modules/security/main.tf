@@ -131,6 +131,18 @@ resource "aws_security_group_rule" "control_plane_api_from_bastion" {
   description              = "Kubectl via bastion"
 }
 
+resource "aws_security_group_rule" "control_plane_api_from_internal" {
+  for_each = toset(var.internal_api_cidr_blocks)
+
+  type              = "ingress"
+  from_port         = 6443
+  to_port           = 6443
+  protocol          = "tcp"
+  cidr_blocks       = [each.value]
+  security_group_id = aws_security_group.control_plane.id
+  description       = "Kube-apiserver via internal load balancer"
+}
+
 resource "aws_security_group_rule" "control_plane_etcd_peer" {
   type                     = "ingress"
   from_port                = 2380

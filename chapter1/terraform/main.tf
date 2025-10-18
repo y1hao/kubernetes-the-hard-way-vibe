@@ -15,13 +15,14 @@ module "network" {
 module "security" {
   source = "./modules/security"
 
-  name_prefix           = "kthw"
-  vpc_id                = module.network.vpc_id
-  tags                  = local.base_tags
-  admin_cidr_blocks     = var.admin_cidr_blocks
-  pod_cidr              = var.pod_cidr
-  service_cidr          = var.service_cidr
-  nodeport_source_cidrs = var.nodeport_source_cidrs
+  name_prefix              = "kthw"
+  vpc_id                   = module.network.vpc_id
+  tags                     = local.base_tags
+  admin_cidr_blocks        = var.admin_cidr_blocks
+  pod_cidr                 = var.pod_cidr
+  service_cidr             = var.service_cidr
+  nodeport_source_cidrs    = var.nodeport_source_cidrs
+  internal_api_cidr_blocks = values(var.private_subnet_cidrs)
 }
 
 data "aws_ami" "bastion" {
