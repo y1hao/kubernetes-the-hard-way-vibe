@@ -130,6 +130,34 @@ entries:
       - cp-c
     path: /etc/kubernetes/kube-scheduler/kube-scheduler.env
   mode: "640"
+- name: front-proxy-ca
+  source: ../chapter3/pki/front-proxy/front-proxy-ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/front-proxy-ca.pem
+  mode: "644"
+- name: front-proxy-client-cert
+  source: ../chapter3/pki/front-proxy/front-proxy-client.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/front-proxy-client.pem
+  mode: "640"
+- name: front-proxy-client-key
+  source: ../chapter3/pki/front-proxy/front-proxy-client-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubernetes/front-proxy-client-key.pem
+  mode: "600"
+  sensitive: true
 - name: kube-proxy-config
   source: config/kube-proxy/config.yaml
   destination:
