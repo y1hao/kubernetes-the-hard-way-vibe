@@ -1,0 +1,194 @@
+apiVersion: kthw/v1
+kind: DistributionManifest
+metadata:
+  chapter: 7
+  generatedAt: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+entries:
+  - name: kubelet-binary
+    source: bin/kubelet
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /usr/local/bin/kubelet
+    mode: "755"
+  - name: kube-proxy-binary
+    source: bin/kube-proxy
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /usr/local/bin/kube-proxy
+    mode: "755"
+  - name: containerd-archive
+    source: bin/containerd.tar.gz
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /tmp/containerd.tar.gz
+      mode: "644"
+  - name: runc-binary
+    source: bin/runc
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /usr/local/sbin/runc
+    mode: "755"
+  - name: crictl-archive
+    source: bin/crictl.tar.gz
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /tmp/crictl.tar.gz
+      mode: "644"
+  - name: containerd-config
+    source: config/containerd/config.toml
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/containerd/config.toml
+    mode: "644"
+  - name: kubelet-config
+    source: config/kubelet/config.yaml
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kubelet/config.yaml
+    mode: "640"
+  - name: kubelet-shared-env
+    source: config/kubelet/kubelet.env
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/kubelet.d/kubelet.env
+    mode: "640"
+  - name: kubelet-node-env
+    perNode:
+      worker-a:
+        source: config/kubelet/worker-a.env
+        destination:
+          path: /etc/kubelet.d/node.env
+        mode: "640"
+      worker-b:
+        source: config/kubelet/worker-b.env
+        destination:
+          path: /etc/kubelet.d/node.env
+        mode: "640"
+  - name: kubelet-kubeconfig
+    perNode:
+      worker-a:
+        source: kubeconfigs/worker-a-kubelet.kubeconfig
+        destination:
+          path: /var/lib/kubelet/kubeconfig
+        mode: "600"
+      worker-b:
+        source: kubeconfigs/worker-b-kubelet.kubeconfig
+        destination:
+          path: /var/lib/kubelet/kubeconfig
+        mode: "600"
+  - name: kubelet-pki
+    perNode:
+      worker-a:
+        sources:
+          - chapter3/pki/ca/ca.pem
+          - chapter3/pki/kubelet/worker-a/kubelet.pem
+          - chapter3/pki/kubelet/worker-a/kubelet-key.pem
+        destinations:
+          - path: /var/lib/kubelet/pki/ca.pem
+            mode: "644"
+          - path: /var/lib/kubelet/pki/kubelet.pem
+            mode: "600"
+          - path: /var/lib/kubelet/pki/kubelet-key.pem
+            mode: "600"
+      worker-b:
+        sources:
+          - chapter3/pki/ca/ca.pem
+          - chapter3/pki/kubelet/worker-b/kubelet.pem
+          - chapter3/pki/kubelet/worker-b/kubelet-key.pem
+        destinations:
+          - path: /var/lib/kubelet/pki/ca.pem
+            mode: "644"
+          - path: /var/lib/kubelet/pki/kubelet.pem
+            mode: "600"
+          - path: /var/lib/kubelet/pki/kubelet-key.pem
+            mode: "600"
+  - name: kube-proxy-config
+    source: config/kube-proxy/config.yaml
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kube-proxy/config.yaml
+    mode: "640"
+  - name: kube-proxy-env
+    source: config/kube-proxy/kube-proxy.env
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/kube-proxy.d/kube-proxy.env
+    mode: "640"
+  - name: kube-proxy-kubeconfig
+    source: kubeconfigs/kube-proxy.kubeconfig
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kube-proxy/kubeconfig
+    mode: "600"
+  - name: kube-proxy-pki
+    source: chapter3/pki/kube-proxy/kube-proxy.pem
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kube-proxy/pki/kube-proxy.pem
+    mode: "600"
+    sensitive: true
+  - name: kube-proxy-key
+    source: chapter3/pki/kube-proxy/kube-proxy-key.pem
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kube-proxy/pki/kube-proxy-key.pem
+    mode: "600"
+    sensitive: true
+  - name: kube-proxy-ca
+    source: chapter3/pki/ca/ca.pem
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /var/lib/kube-proxy/pki/ca.pem
+    mode: "644"
+  - name: containerd-service
+    source: systemd/containerd.service
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/systemd/system/containerd.service
+    mode: "644"
+  - name: kubelet-service
+    source: systemd/kubelet.service
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/systemd/system/kubelet.service
+    mode: "644"
+  - name: kube-proxy-service
+    source: systemd/kube-proxy.service
+    destination:
+      nodes:
+        - worker-a
+        - worker-b
+      path: /etc/systemd/system/kube-proxy.service
+    mode: "644"
