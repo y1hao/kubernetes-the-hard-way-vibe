@@ -7,8 +7,8 @@ metadata:
     app: dns-metrics-check
 spec:
   containers:
-    - name: dnsutils
-      image: registry.k8s.io/dns/tools:1.31.1
+    - name: agnhost
+      image: registry.k8s.io/e2e-test-images/agnhost:2.45
       command:
         - sleep
         - "3600"

@@ -36,7 +36,7 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    ```
 3. DNS lookup resolves the Kubernetes service:
    ```bash
-   chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- nslookup kubernetes.default
+   chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- /agnhost dns --name kubernetes.default
    ```
 4. Metrics Server serving metrics:
    ```bash
