@@ -9,3 +9,5 @@
 - [Chapter 5 Control Plane Decisions](ADRs/005-chapter5-control-plane-decisions.md) — Kubernetes release, filesystem layout, runtime identities, kubectl distribution, and core API/controller configuration flags.
 - [Chapter 6 API Access Decisions](ADRs/006-chapter6-api-access-decisions.md) — Load balancer architecture, DNS zone selection, Terraform scope, health checks, and `/etc/hosts` handling for the control-plane endpoint.
 - [Chapter 7 Worker Stack Decisions](ADRs/007-chapter7-worker-stack-decisions.md) — Worker binary sourcing, containerd stack, kubelet identity/config, and kube-proxy mode for Chapter 7 install.
+
+- [Chapter 8 Cluster Networking Decisions](ADRs/008-chapter8-networking-decisions.md) — Calico release selection, VXLAN-only encapsulation, MTU handling, and artifact layout for Chapter 8 networking rollout.
