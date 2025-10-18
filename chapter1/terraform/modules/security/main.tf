@@ -183,6 +183,16 @@ resource "aws_security_group_rule" "worker_kubelet_from_workers" {
   description              = "Kubelet API from worker add-ons"
 }
 
+resource "aws_security_group_rule" "worker_metrics_from_control_plane" {
+  type                     = "ingress"
+  from_port                = 4443
+  to_port                  = 4443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Metrics Server hostNetwork HTTPS from control plane"
+}
+
 resource "aws_security_group_rule" "worker_bgp_from_workers" {
   type                     = "ingress"
   from_port                = 179
