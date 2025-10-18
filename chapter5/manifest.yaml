@@ -463,15 +463,6 @@ entries:
       - cp-c
     path: /var/lib/kube-proxy/pki/ca.pem
   mode: "644"
-- name: kubelet-ca
-  source: ../chapter3/pki/ca/ca.pem
-  destination:
-    nodes:
-      - cp-a
-      - cp-b
-      - cp-c
-    path: /var/lib/kubelet/pki/ca.pem
-  mode: "644"
 - name: kubelet-pki
   perNode:
     cp-a:
@@ -486,6 +477,15 @@ entries:
       sourceDir: ../chapter3/pki/kubelet/cp-c
       destination:
         path: /var/lib/kubelet/pki
+- name: kubelet-ca
+  source: ../chapter3/pki/ca/ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubelet/pki/ca.pem
+  mode: "644"
 - name: encryption-config
   source: ../chapter3/encryption/encryption-config.yaml
   destination:
