@@ -173,6 +173,16 @@ resource "aws_security_group_rule" "worker_kubelet" {
   description              = "Kubelet API from control plane"
 }
 
+resource "aws_security_group_rule" "worker_kubelet_from_workers" {
+  type                     = "ingress"
+  from_port                = 10250
+  to_port                  = 10250
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.worker.id
+  description              = "Kubelet API from worker add-ons"
+}
+
 resource "aws_security_group_rule" "worker_bgp_from_workers" {
   type                     = "ingress"
   from_port                = 179
