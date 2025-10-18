@@ -463,47 +463,29 @@ entries:
       - cp-c
     path: /var/lib/kube-proxy/pki/ca.pem
   mode: "644"
+- name: kubelet-ca
+  source: ../chapter3/pki/ca/ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kubelet/pki/ca.pem
+  mode: "644"
 - name: kubelet-pki
   perNode:
     cp-a:
-      sources:
-        - ../chapter3/pki/ca/ca.pem
-        - ../chapter3/pki/kubelet/cp-a/kubelet.pem
-        - ../chapter3/pki/kubelet/cp-a/kubelet-key.pem
-      destinations:
-        - path: /var/lib/kubelet/pki/ca.pem
-          mode: "644"
-        - path: /var/lib/kubelet/pki/kubelet.pem
-          mode: "600"
-        - path: /var/lib/kubelet/pki/kubelet-key.pem
-          mode: "600"
-      sensitive: true
+      sourceDir: ../chapter3/pki/kubelet/cp-a
+      destination:
+        path: /var/lib/kubelet/pki
     cp-b:
-      sources:
-        - ../chapter3/pki/ca/ca.pem
-        - ../chapter3/pki/kubelet/cp-b/kubelet.pem
-        - ../chapter3/pki/kubelet/cp-b/kubelet-key.pem
-      destinations:
-        - path: /var/lib/kubelet/pki/ca.pem
-          mode: "644"
-        - path: /var/lib/kubelet/pki/kubelet.pem
-          mode: "600"
-        - path: /var/lib/kubelet/pki/kubelet-key.pem
-          mode: "600"
-      sensitive: true
+      sourceDir: ../chapter3/pki/kubelet/cp-b
+      destination:
+        path: /var/lib/kubelet/pki
     cp-c:
-      sources:
-        - ../chapter3/pki/ca/ca.pem
-        - ../chapter3/pki/kubelet/cp-c/kubelet.pem
-        - ../chapter3/pki/kubelet/cp-c/kubelet-key.pem
-      destinations:
-        - path: /var/lib/kubelet/pki/ca.pem
-          mode: "644"
-        - path: /var/lib/kubelet/pki/kubelet.pem
-          mode: "600"
-        - path: /var/lib/kubelet/pki/kubelet-key.pem
-          mode: "600"
-      sensitive: true
+      sourceDir: ../chapter3/pki/kubelet/cp-c
+      destination:
+        path: /var/lib/kubelet/pki
 - name: encryption-config
   source: ../chapter3/encryption/encryption-config.yaml
   destination:
