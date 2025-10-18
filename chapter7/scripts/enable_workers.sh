@@ -91,6 +91,7 @@ copy_artifacts() {
 install_remote() {
   ssh_node <<'EOSSH'
 set -euo pipefail
+sudo mkdir -p /usr/local/bin /usr/local/libexec
 sudo tar -C /usr/local -xzf /var/tmp/kthw/containerd.tar.gz
 sudo install -m 0755 /var/tmp/kthw/runc /usr/local/sbin/runc
 sudo install -m 0755 /var/tmp/kthw/kubelet /usr/local/bin/kubelet
@@ -126,9 +127,14 @@ EOSSH
 }
 
 post_checks() {
-  ssh_node sudo systemctl status containerd.service --no-pager
-  ssh_node sudo systemctl status kubelet.service --no-pager
-  ssh_node sudo systemctl status kube-proxy.service --no-pager
+  echo "== containerd status =="
+  ssh_node sudo systemctl status containerd.service --no-pager || true
+  echo "-- logs --"
+  ssh_node sudo journalctl -u containerd.service -n 40 --no-pager || true
+  echo "== kubelet status =="
+  ssh_node sudo systemctl status kubelet.service --no-pager || true
+  echo "== kube-proxy status =="
+  ssh_node sudo systemctl status kube-proxy.service --no-pager || true
 }
 
 prepare_remote
