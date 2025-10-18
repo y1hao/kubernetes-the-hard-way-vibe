@@ -49,8 +49,10 @@ This document captures the desired end-state architecture for the cluster we are
 ## Access & Tooling Strategy
 
 - **Bastion Host**: Single Ubuntu 22.04 instance in a public subnet, limited inbound to known admin IPs.
-  - Central entry point for SSH and administrative tooling, isolating private nodes.
+  - Primary entry for SSH and node-level work while keeping the data plane private.
   - Doubles as the control point for certificate distribution and configuration management via `scp`/`ssh`.
+- **Public API Access**: Approved operator networks reach the kube-apiserver through a public NLB with restricted CIDRs and Route53.
+  - Enables direct `kubectl` from workstations without hopping through the bastion while preserving auditing and guardrails.
 - **Optional SSM**: Evaluate AWS Systems Manager Session Manager as an enhancement.
   - Could eliminate public SSH altogether later, but bastion remains the baseline due to deterministic workflow.
 - **Admin Tooling**: Install `awscli`, `jq`, `kubectl`, `cfssl`, `etcdctl`, and `helm` (for future add-ons) on both local machines and the bastion.
@@ -68,12 +70,14 @@ This document captures the desired end-state architecture for the cluster we are
 
 ## External Exposure
 
-- **Control Plane Endpoint**: AWS Network Load Balancer fronting the three control plane nodes on TCP 6443.
+- **Control Plane Endpoint (internal)**: AWS Network Load Balancer fronting the three control plane nodes on TCP 6443 inside the VPC.
   - Native health checks and cross-AZ failover with minimal additional maintenance.
   - Alternative (documented but not primary): self-managed HAProxy pair with Elastic IP failover.
+- **Control Plane Endpoint (public)**: Second NLB in public subnets exposing TCP 6443 to allowlisted operator CIDRs.
+  - Shares the same targets as the internal NLB while layering WAF/CloudWatch alarms for edge visibility.
 - **Application Exposure**: NLB also used later for user workloads by pointing to worker node NodePorts (e.g., 30080 for nginx demo).
   - Provides a stable, public entry point without managing Ingress controllers initially.
-- **DNS**: Optional Route53 record (e.g., `api.kthw.local`) targeting the control plane NLB for operator convenience.
+- **DNS**: Route53 publishes internal and public records (e.g., `api.kthw.internal`, `api.kthw.example.com`) aligned with the respective load balancers.
 
 ## Naming & Tagging Conventions
 
