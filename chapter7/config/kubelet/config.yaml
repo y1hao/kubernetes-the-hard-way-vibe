@@ -1,0 +1,51 @@
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+address: 0.0.0.0
+port: 10250
+readOnlyPort: 0
+cgroupDriver: systemd
+clusterDNS:
+  - 10.32.0.10
+clusterDomain: cluster.local
+failSwapOn: true
+serializeImagePulls: false
+staticPodPath: ""
+resolvConf: /run/systemd/resolve/resolv.conf
+
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+    cacheTTL: 2m0s
+  x509:
+    clientCAFile: /var/lib/kubelet/pki/ca.pem
+
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+
+evictionHard:
+  memory.available: 200Mi
+  nodefs.available: "10%"
+  imagefs.available: "10%"
+  nodefs.inodesFree: "5%"
+
+kubeReserved:
+  cpu: "100m"
+  memory: "256Mi"
+  ephemeral-storage: "1Gi"
+
+systemReserved:
+  cpu: "100m"
+  memory: "256Mi"
+  ephemeral-storage: "1Gi"
+
+rotateCertificates: false
+serverTLSBootstrap: false
+tlsCertFile: /var/lib/kubelet/pki/kubelet.pem
+tlsPrivateKeyFile: /var/lib/kubelet/pki/kubelet-key.pem
+
+featureGates: {}
