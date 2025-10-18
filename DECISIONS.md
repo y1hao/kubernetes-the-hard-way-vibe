@@ -11,3 +11,4 @@
 - [Chapter 7 Worker Stack Decisions](ADRs/007-chapter7-worker-stack-decisions.md) — Worker binary sourcing, containerd stack, kubelet identity/config, and kube-proxy mode for Chapter 7 install.
 
 - [Chapter 8 Cluster Networking Decisions](ADRs/008-chapter8-networking-decisions.md) — Calico release selection, VXLAN-only encapsulation, MTU handling, and artifact layout for Chapter 8 networking rollout.
+- [Chapter 9 Core Add-ons Decisions](ADRs/009-chapter9-core-addons-decisions.md) — CoreDNS and Metrics Server baselines, DNS VIP allocation, RBAC scope, and artifact layout for Chapter 9.
