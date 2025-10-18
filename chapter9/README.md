@@ -62,4 +62,5 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
 - BusyBox `nslookup` prefers fully qualified names; use `kubernetes.default.svc.cluster.local` for validation.
 - If the Chapter 3 CA lives outside the repo, override it with `CA_PATH=/path/to/ca.pem KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh`. The script updates both the request-header and client CA data expected by the aggregator.
 - Ensure containerd/kubelet/kube-proxy are running on all control-plane nodes before validating metrics; without them, the apiserver cannot reach ClusterIP-backed aggregated APIs.
+- The requestheader ConfigMap now relies on the front-proxy CA generated in Chapter 3 (`chapter3/pki/front-proxy/`); regenerate and redistribute those assets before rerunning the kube-apiserver bootstrap.
 - Administrative access continues to rely on the default `system:masters` binding.

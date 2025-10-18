@@ -70,6 +70,9 @@ verify_files() {
     /var/lib/kubernetes/service-account.key
     /var/lib/kubernetes/service-account.pub
     /var/lib/kubernetes/encryption-config.yaml
+    /var/lib/kubernetes/front-proxy-ca.pem
+    /var/lib/kubernetes/front-proxy-client.pem
+    /var/lib/kubernetes/front-proxy-client-key.pem
     /etc/kube-proxy.d/kube-proxy.env
     /var/lib/kube-proxy/config.yaml
     /var/lib/kube-proxy/kubeconfig
@@ -168,6 +171,11 @@ fix_permissions() {
 
   chown kube-apiserver:kube-apiserver /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
   chmod 600 /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
+
+  chown kube-apiserver:kube-apiserver /var/lib/kubernetes/front-proxy-client.pem /var/lib/kubernetes/front-proxy-client-key.pem
+  chmod 640 /var/lib/kubernetes/front-proxy-client.pem
+  chmod 600 /var/lib/kubernetes/front-proxy-client-key.pem
+  chmod 644 /var/lib/kubernetes/front-proxy-ca.pem
 
   chmod 640 /etc/kube-proxy.d/kube-proxy.env /var/lib/kube-proxy/config.yaml
   chmod 600 /var/lib/kube-proxy/kubeconfig /var/lib/kube-proxy/pki/kube-proxy.pem /var/lib/kube-proxy/pki/kube-proxy-key.pem

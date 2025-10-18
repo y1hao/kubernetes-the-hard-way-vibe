@@ -8,6 +8,7 @@ Chapter 5 focuses on staging the upstream Kubernetes v1.31.1 control plane binar
 - Iterated on `bootstrap_control_plane.sh` to copy the etcd CA, normalise ownership, render node-specific settings, and restart the services idempotently.
 - Added request-header CA flags for controller-manager and scheduler, removed the deprecated scheduler `--port` flag, and ensured kube-apiserver references the shared PKI layout under `/var/lib/kubernetes`.
 - Rolled kube-proxy plus the full kubelet/containerd stack onto the control-plane nodes so they participate in the pod network; manifests now ship the runtime binaries/configs and the bootstrap script enables containerd, kubelet, and kube-proxy alongside the core control-plane services.
+- Added the aggregator front-proxy CA/client certificates and wired the kube-apiserver `--requestheader-*`/`--proxy-client-*` flags so aggregated APIs like metrics-server can authenticate proxied requests.
 - Resolved bring-up regressions by:
   - Dropping the obsolete `--cloud-provider=none` flag from kube-controller-manager.
   - Converting controller-manager and scheduler systemd units to `Type=exec` so systemd stops timing them out.
