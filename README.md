@@ -71,3 +71,10 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Introduced the internal AWS NLB (`kthw-api-nlb`) with TCP 6443 listener and target group covering `cp-a`, `cp-b`, and `cp-c`, plus a private Route53 zone `kthw.lab` exposing `api.kthw.lab`.
 - Stood up the dedicated `chapter6/terraform/` stack and README detailing usage, validation, and outputs for the shared API endpoint.
 - Expanded Chapter 1 security groups so the control plane accepts kube-apiserver traffic from the NLB subnets, enabling load-balanced access from the bastion and future clients.
+
+### Chapter 7
+
+- Logged worker runtime decisions in `ADRs/007-chapter7-worker-stack-decisions.md` and updated `DECISIONS.md` to track Chapter 7 scope.
+- Staged Kubernetes v1.31.1 worker binaries plus containerd v1.7.14/runc v1.1.12/crictl v1.31.1 under `chapter7/bin/`, templated configs in `chapter7/config/`, and defined distribution targets via `chapter7/manifest.yaml`.
+- Authored `chapter7/scripts/enable_workers.sh` and README guidance so workers install the stack, register with the control plane, and remain `NotReady` pending the Chapter 8 CNI rollout.
+
