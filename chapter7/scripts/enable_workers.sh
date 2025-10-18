@@ -26,6 +26,7 @@ read -r -a EXTRA_OPTS <<< "${KTHW_SSH_OPTS:-}"
 
 SSH_CMD_BASE=("$SSH_BASE" -i "$IDENTITY" "${EXTRA_OPTS[@]}")
 SCP_CMD_BASE=("$SCP_BASE" -i "$IDENTITY" "${EXTRA_OPTS[@]}")
+REMOTE_USER=$("${SSH_CMD_BASE[@]}" "$NODE" id -un)
 
 ssh_node() {
   "${SSH_CMD_BASE[@]}" "$NODE" "$@"
@@ -51,6 +52,7 @@ prepare_remote() {
     /var/lib/kubelet/pki \
     /var/lib/kube-proxy/pki \
     "$WORK_DIR"
+  ssh_node sudo chown "$REMOTE_USER:$REMOTE_USER" "$WORK_DIR"
 }
 
 copy_artifacts() {
