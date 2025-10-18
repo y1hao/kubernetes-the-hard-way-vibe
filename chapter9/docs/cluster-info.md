@@ -7,7 +7,7 @@
 ## Operator Commands
 - DNS health:
   ```bash
-  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- /agnhost dig kubernetes.default
+  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- nslookup kubernetes.default
   ```
 - Metrics availability:
   ```bash
