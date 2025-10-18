@@ -16,6 +16,11 @@ Run the following from the bastion:
 
 Expect the kubelet `NotReady` condition to clear once the Calico DaemonSet becomes ready on all nodes.
 
+Before running exec/logs commands, ensure the kube-apiserver has kubelet proxy rights:
+
+```bash
+./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig apply -f chapter8/manifests/kube-apiserver-to-kubelet-crb.yaml
+```
 ## Validation Workflow
 1. Confirm all components are healthy:
    ```bash

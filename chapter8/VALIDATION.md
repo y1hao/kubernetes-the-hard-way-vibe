@@ -1,5 +1,7 @@
 # Chapter 8 Validation Checklist
 
+Before starting, ensure the API server can proxy to kubelets by applying `chapter8/manifests/kube-apiserver-to-kubelet-crb.yaml`.
+
 1. **Calico components healthy**
    - `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig get pods -n kube-system`
    - Confirm `calico-node` DaemonSet has one Ready pod per node and `calico-kube-controllers` Deployment is Ready.
