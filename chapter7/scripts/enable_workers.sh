@@ -19,6 +19,12 @@ BIN_DIR="$ARTIFACT_ROOT/bin"
 CONFIG_DIR="$ARTIFACT_ROOT/config"
 KUBECONFIG_DIR="$ARTIFACT_ROOT/kubeconfigs"
 REPO_ROOT=$(cd "$ARTIFACT_ROOT/.." && pwd)
+DEFAULT_KUBECTL="$REPO_ROOT/chapter5/bin/kubectl"
+if [[ -x "$DEFAULT_KUBECTL" ]]; then
+  KUBECTL_CMD="${KTHW_KUBECTL:-$DEFAULT_KUBECTL}"
+else
+  KUBECTL_CMD="${KTHW_KUBECTL:-kubectl}"
+fi
 IDENTITY=${KTHW_SSH_KEY:-$REPO_ROOT/chapter1/kthw-lab}
 SSH_BASE=${KTHW_SSH_CMD:-ssh}
 SCP_BASE=${KTHW_SCP_CMD:-scp}
@@ -143,4 +149,4 @@ install_remote
 post_checks
 cleanup_remote
 
-kubectl --kubeconfig "$REPO_ROOT/chapter5/kubeconfigs/admin.kubeconfig" get nodes "$NODE"
+"$KUBECTL_CMD" --kubeconfig "$REPO_ROOT/chapter5/kubeconfigs/admin.kubeconfig" get nodes "$NODE"
