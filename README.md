@@ -78,3 +78,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Staged Kubernetes v1.31.1 worker binaries plus containerd v1.7.14/runc v1.1.12/crictl v1.31.1 under `chapter7/bin/`, templated configs in `chapter7/config/`, and defined distribution targets via `chapter7/manifest.yaml`.
 - Authored `chapter7/scripts/enable_workers.sh` and README guidance so workers install the stack, register with the control plane, and remain `NotReady` pending the Chapter 8 CNI rollout.
 
+### Chapter 8
+
+- Captured Calico networking choices in `ADRs/008-chapter8-networking-decisions.md` and linked them through `DECISIONS.md`, then rendered a VXLAN-tuned manifest at `chapter8/calico.yaml` alongside the archived upstream source.
+- Hardened networking prerequisites by expanding security group rules in `chapter1/terraform/modules/security/main.tf` for BGP/VXLAN traffic and documenting the dependency in `chapter8/README.md`.
+- Added operational artifacts: `chapter8/README.md`, `chapter8/VALIDATION.md`, test fixtures in `chapter8/tests/connectivity.yaml`, and a kubelet proxy RBAC binding under `chapter8/manifests/kube-apiserver-to-kubelet-crb.yaml`.
+- Authored `chapter5/scripts/update_hosts_entries.sh` to align `/etc/hosts` across bastion and nodes, enabling `kubectl exec` validation, and trimmed service-DNS tests until Chapter 9 delivers CoreDNS.
