@@ -213,6 +213,16 @@ resource "aws_security_group_rule" "control_plane_kubelet_from_workers" {
   description              = "Kubelet HTTPS from worker nodes"
 }
 
+resource "aws_security_group_rule" "control_plane_metrics_self" {
+  type                     = "ingress"
+  from_port                = 4443
+  to_port                  = 4443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.control_plane.id
+  security_group_id        = aws_security_group.control_plane.id
+  description              = "Metrics Server hostNetwork HTTPS between control-plane nodes"
+}
+
 resource "aws_security_group_rule" "worker_bgp_from_workers" {
   type                     = "ingress"
   from_port                = 179
