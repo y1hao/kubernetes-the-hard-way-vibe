@@ -7,7 +7,7 @@
    - `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig apply -f chapter8/tests/connectivity.yaml`
    - Wait for both `net-check` pods in `net-test` namespace to reach Ready state on separate nodes.
 3. **Pod-to-pod ping**
-   - Retrieve pod names/IPs: `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig get pods -n net-test -o wide`
+   - Retrieve pod names/IPs: If DNS lookups against node hostnames fail during exec, run `chapter5/scripts/update_hosts_entries.sh` on the bastion to add static entries. `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig get pods -n net-test -o wide`
    - From each pod: `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec -n net-test <pod> -- ping -c3 <peer-ip>`
 4. **Service VIP curl**
    - `./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec -n net-test <pod> -- curl -sS net-check.net-test.svc.cluster.local`
