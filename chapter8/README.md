@@ -29,11 +29,14 @@ Before running exec/logs commands, ensure the kube-apiserver has kubelet proxy r
    ```
    Ensure `calico-node` and `calico-kube-controllers` pods are Running/Ready. If `kubectl exec` fails to resolve node hostnames, run `chapter5/scripts/update_hosts_entries.sh` on the bastion to populate /etc/hosts entries.
 2. Deploy the helper workloads from `chapter8/tests/` (created later in this chapter) to run cross-node connectivity checks.
-3. Exec into each test pod to ping the peer pod IP and curl the test service ClusterIP to verify kube-proxy rules:
+3. Exec into each test pod to ping the peer pod IP to confirm cross-node connectivity:
    ```bash
    ./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig \
-     exec deploy/net-spec -- ping -c3 <peer-pod-ip>
+     exec -n net-test <pod> -- ping -c3 <peer-pod-ip>
    ```
+
+> DNS-based service VIP checks are deferred to Chapter 9 once CoreDNS is deployed.
+
 4. Review `calico-node` logs if readiness stalls:
    ```bash
    ./chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig \
