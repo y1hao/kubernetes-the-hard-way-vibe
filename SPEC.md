@@ -286,18 +286,43 @@ Here are the roadmap of this project:
 
 ---
 
-# Chapter 13 — Tooling & cleanup
+# Chapter 13 — Public API exposure
 
 **Work**
 
-* Wrap repeatable steps with Make/Ansible/Terraform (without changing the spirit of manual installs).
-* Add teardown scripts (careful with volumes/snapshots).
+* Add a public NLB (or HA pair) that targets the control planes on `:6443` with cross-zone enabled.
+* Tighten security groups and Route53 so only approved CIDRs reach `api.<cluster>.<domain>`.
+* Regenerate kube-apiserver cert SANs and update `admin.kubeconfig` to point at the public host.
+* Layer optional protections: AWS WAF, CloudWatch alarms, audit log reviews.
 
 **Artifacts**
 
-* `Makefile` targets or Ansible roles per chapter.
-* `cleanup.sh` with guard rails.
+* IaC for the public NLB + security group.
+* CIDR allowlist doc and rotation SOP.
+* Updated kubeconfigs plus remote access runbook.
 
 **Validation**
 
-* Fresh rebuild on an empty VPC reproduces the same result.
+* `kubectl --kubeconfig admin-public.kubeconfig get --raw=/livez` succeeds from the internet.
+* Removing your CIDR from the security group blocks access.
+* Killing one control plane node keeps the API reachable via the NLB.
+
+---
+
+# Chapter 14 — Cleanup
+
+**Work**
+
+* Keep an inventory of EC2, volumes, DNS, and LBs tagged for the cluster.
+* Ship guarded teardown tooling (`cleanup.sh`, Terraform destroy) with confirmations.
+* Take final etcd snapshots and back up AMIs/S3 before destroying anything.
+
+**Artifacts**
+
+* `cleanup.sh`/Terraform destroy plan with tag filters.
+* Manual checklist for log retention, WAF, leftovers.
+
+**Validation**
+
+* Dry-run cleanup in staging and confirm no orphaned resources remain.
+* Recreate the cluster from backups to prove recoverability.
