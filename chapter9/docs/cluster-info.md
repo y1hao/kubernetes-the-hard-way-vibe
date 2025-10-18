@@ -16,7 +16,7 @@
   ```
 - Refresh aggregator trust bundle when needed:
   ```bash
-  bash chapter9/scripts/ensure_requestheader_configmap.sh
+  KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
   ```
 
 > Ensure the helper pod from `chapter9/validation/test-client.yaml` is running before issuing DNS checks.
