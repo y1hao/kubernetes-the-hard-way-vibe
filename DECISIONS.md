@@ -8,3 +8,4 @@
 - [Chapter 4 etcd Decisions](ADRs/004-chapter4-etcd-decisions.md) — etcd release selection, data placement, TLS issuance strategy, and distribution tooling approach.
 - [Chapter 5 Control Plane Decisions](ADRs/005-chapter5-control-plane-decisions.md) — Kubernetes release, filesystem layout, runtime identities, kubectl distribution, and core API/controller configuration flags.
 - [Chapter 6 API Access Decisions](ADRs/006-chapter6-api-access-decisions.md) — Load balancer architecture, DNS zone selection, Terraform scope, health checks, and `/etc/hosts` handling for the control-plane endpoint.
+- [Chapter 7 Worker Stack Decisions](ADRs/007-chapter7-worker-stack-decisions.md) — Worker binary sourcing, containerd stack, kubelet identity/config, and kube-proxy mode for Chapter 7 install.
