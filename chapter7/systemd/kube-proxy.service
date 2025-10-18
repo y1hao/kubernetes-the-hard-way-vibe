@@ -1,0 +1,16 @@
+[Unit]
+Description=Kubernetes Kube-Proxy
+Documentation=https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
+After=network.target kubelet.service
+Requires=kubelet.service
+
+[Service]
+EnvironmentFile=/etc/kube-proxy.d/kube-proxy.env
+ExecStart=/usr/local/bin/kube-proxy $KUBEPROXY_OPTS
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

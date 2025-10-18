@@ -1,0 +1,19 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://kubernetes.io/docs/home/
+After=containerd.service
+Requires=containerd.service
+
+[Service]
+EnvironmentFile=-/etc/default/kubelet
+EnvironmentFile=/etc/kubelet.d/kubelet.env
+EnvironmentFile=/etc/kubelet.d/node.env
+ExecStart=/usr/local/bin/kubelet $KUBELET_OPTS $KUBELET_NODE_OPTS
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+KillMode=process
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target
