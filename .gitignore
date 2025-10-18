@@ -13,3 +13,4 @@ chapter5/artifacts/
 chapter5/bin/
 chapter5/pki/
 *.kubeconfig
+*.csr
