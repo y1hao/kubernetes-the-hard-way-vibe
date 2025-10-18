@@ -7,11 +7,12 @@
 ## Operator Commands
 - DNS health:
   ```bash
-  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- nslookup kubernetes.default
+  k exec dns-metrics-check -- nslookup kubernetes.default.svc.cluster.local
   ```
+  Short names (e.g., `kubernetes.default`) may return NXDOMAIN inside BusyBox; always use the FQDN.
 - Metrics availability:
   ```bash
-  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig top nodes
+  k top nodes
   ```
 
 > Ensure the helper pod from `chapter9/validation/test-client.yaml` is running before issuing DNS checks.
