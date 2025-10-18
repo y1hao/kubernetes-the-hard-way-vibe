@@ -7,12 +7,14 @@
 ## Operator Commands
 - DNS health:
   ```bash
-  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig -n kube-system exec deploy/coredns -c coredns -- nslookup kubernetes.default
+  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig exec dns-metrics-check -- nslookup kubernetes.default
   ```
 - Metrics availability:
   ```bash
   chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig top nodes
   ```
+
+> Ensure the helper pod from `chapter9/validation/test-client.yaml` is running before issuing DNS checks.
 
 ## RBAC Notes
 - Administrative access continues to rely on the built-in `system:masters` group; no additional cluster-admin bindings were created in this chapter.

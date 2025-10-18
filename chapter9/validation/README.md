@@ -5,7 +5,7 @@
 - Launch:
   ```bash
   chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig apply -f chapter9/validation/test-client.yaml
-  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig wait pod/dns-metrics-check --for=condition=Ready
+  chapter5/bin/kubectl --kubeconfig chapter5/kubeconfigs/admin.kubeconfig wait pod/dns-metrics-check --for=condition=Ready --timeout=180s
   ```
 
 ## DNS Resolution Check
