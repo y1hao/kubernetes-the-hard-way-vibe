@@ -66,3 +66,8 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Removed the obsolete `--cloud-provider=none` flag, converted controller-manager/scheduler units to `Type=exec`, and fixed kube-apiserver advertising/permissions to eliminate handler timeouts.
 - From the bastion ran `distribute_control_plane.sh --nodes <cp>` followed by `bootstrap_control_plane.sh` on each control-plane node (cp-a/b/c), confirmed services via `systemctl status`, and verified `/healthz?verbose`.
 
+### Chapter 6
+
+- Introduced the internal AWS NLB (`kthw-api-nlb`) with TCP 6443 listener and target group covering `cp-a`, `cp-b`, and `cp-c`, plus a private Route53 zone `kthw.lab` exposing `api.kthw.lab`.
+- Stood up the dedicated `chapter6/terraform/` stack and README detailing usage, validation, and outputs for the shared API endpoint.
+- Expanded Chapter 1 security groups so the control plane accepts kube-apiserver traffic from the NLB subnets, enabling load-balanced access from the bastion and future clients.

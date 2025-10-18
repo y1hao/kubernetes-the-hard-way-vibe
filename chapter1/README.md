@@ -18,6 +18,8 @@
 | `kthw-control-plane` | Control plane nodes | Bastion SG | 22/tcp | Admin SSH |
 |  |  | Worker SG | 6443/tcp | kube-apiserver from workers |
 |  |  | Bastion SG | 6443/tcp | kubectl via bastion |
+|  |  | Private subnet CIDRs | 6443/tcp | kube-apiserver via internal NLB |
+|  |  | Public subnet CIDRs | 6443/tcp | Cross-AZ NLB node traffic |
 |  |  | Self | 2379-2380/tcp | etcd peer/client |
 | `kthw-worker` | Worker nodes | Bastion SG | 22/tcp | Admin SSH |
 |  |  | Control plane SG | 10250/tcp | kubelet API from control plane |
