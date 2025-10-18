@@ -22,7 +22,7 @@ module "security" {
   pod_cidr                 = var.pod_cidr
   service_cidr             = var.service_cidr
   nodeport_source_cidrs    = var.nodeport_source_cidrs
-  internal_api_cidr_blocks = values(var.private_subnet_cidrs)
+  internal_api_cidr_blocks = distinct(concat(values(var.private_subnet_cidrs), values(var.public_subnet_cidrs)))
 }
 
 data "aws_ami" "bastion" {
