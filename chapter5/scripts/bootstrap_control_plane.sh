@@ -2,7 +2,7 @@
 # Bootstrap Kubernetes control plane services on a node after files are distributed.
 set -euo pipefail
 
-REQUIRED_BINARIES=(/usr/local/bin/kube-apiserver /usr/local/bin/kube-controller-manager /usr/local/bin/kube-scheduler)
+REQUIRED_BINARIES=(/usr/local/bin/kube-apiserver /usr/local/bin/kube-controller-manager /usr/local/bin/kube-scheduler /usr/local/bin/kube-proxy)
 SERVICE_USERS=(kube-apiserver kube-controller-manager kube-scheduler)
 
 need_root() {
@@ -27,6 +27,7 @@ ensure_directories() {
   chown root:root /var/lib/kubernetes
 
   mkdir -p /etc/kubernetes/kube-apiserver /etc/kubernetes/kube-controller-manager /etc/kubernetes/kube-scheduler
+  mkdir -p /etc/kube-proxy.d /var/lib/kube-proxy/pki
 }
 
 copy_etcd_ca() {
@@ -68,6 +69,12 @@ verify_files() {
     /var/lib/kubernetes/service-account.key
     /var/lib/kubernetes/service-account.pub
     /var/lib/kubernetes/encryption-config.yaml
+    /etc/kube-proxy.d/kube-proxy.env
+    /var/lib/kube-proxy/config.yaml
+    /var/lib/kube-proxy/kubeconfig
+    /var/lib/kube-proxy/pki/ca.pem
+    /var/lib/kube-proxy/pki/kube-proxy.pem
+    /var/lib/kube-proxy/pki/kube-proxy-key.pem
   )
 
   for file in "${required_files[@]}"; do
@@ -137,6 +144,10 @@ fix_permissions() {
 
   chown kube-apiserver:kube-apiserver /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
   chmod 600 /var/lib/kubernetes/admin.kubeconfig /var/lib/kubernetes/encryption-config.yaml
+
+  chmod 640 /etc/kube-proxy.d/kube-proxy.env /var/lib/kube-proxy/config.yaml
+  chmod 600 /var/lib/kube-proxy/kubeconfig /var/lib/kube-proxy/pki/kube-proxy.pem /var/lib/kube-proxy/pki/kube-proxy-key.pem
+  chmod 644 /var/lib/kube-proxy/pki/ca.pem
 }
 
 start_services() {
@@ -144,6 +155,7 @@ start_services() {
   systemctl enable --now kube-apiserver.service
   systemctl enable --now kube-controller-manager.service
   systemctl enable --now kube-scheduler.service
+  systemctl enable --now kube-proxy.service
 }
 
 main() {

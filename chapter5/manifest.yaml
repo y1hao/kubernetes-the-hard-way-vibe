@@ -41,6 +41,15 @@ entries:
       - bastion
     path: /usr/local/bin/kubectl
   mode: "755"
+- name: kube-proxy-binary
+  source: ../chapter7/bin/kube-proxy
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /usr/local/bin/kube-proxy
+  mode: "755"
 - name: kube-apiserver-env
   source: config/kube-apiserver/kube-apiserver.env
   destination:
@@ -85,6 +94,24 @@ entries:
       - cp-c
     path: /etc/kubernetes/kube-scheduler/kube-scheduler.env
   mode: "640"
+- name: kube-proxy-config
+  source: config/kube-proxy/config.yaml
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kube-proxy/config.yaml
+  mode: "640"
+- name: kube-proxy-env
+  source: config/kube-proxy/kube-proxy.env
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/kube-proxy.d/kube-proxy.env
+  mode: "640"
 - name: kube-apiserver-service
   source: systemd/kube-apiserver.service
   destination:
@@ -111,6 +138,15 @@ entries:
       - cp-b
       - cp-c
     path: /etc/systemd/system/kube-scheduler.service
+  mode: "644"
+- name: kube-proxy-service
+  source: systemd/kube-proxy.service
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /etc/systemd/system/kube-proxy.service
   mode: "644"
 - name: service-account-keys
   perNode:
@@ -170,6 +206,15 @@ entries:
     path: /var/lib/kubernetes/kube-scheduler.kubeconfig
   owner: kube-scheduler
   group: kube-scheduler
+  mode: "600"
+- name: kube-proxy-kubeconfig
+  source: ../chapter7/kubeconfigs/kube-proxy.kubeconfig
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kube-proxy/kubeconfig
   mode: "600"
 - name: admin-kubeconfig
   source: kubeconfigs/admin.kubeconfig
@@ -274,6 +319,35 @@ entries:
   group: kube-scheduler
   mode: "600"
   sensitive: true
+- name: kube-proxy-cert
+  source: ../chapter3/pki/kube-proxy/kube-proxy.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kube-proxy/pki/kube-proxy.pem
+  mode: "600"
+  sensitive: true
+- name: kube-proxy-key
+  source: ../chapter3/pki/kube-proxy/kube-proxy-key.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kube-proxy/pki/kube-proxy-key.pem
+  mode: "600"
+  sensitive: true
+- name: kube-proxy-ca
+  source: ../chapter3/pki/ca/ca.pem
+  destination:
+    nodes:
+      - cp-a
+      - cp-b
+      - cp-c
+    path: /var/lib/kube-proxy/pki/ca.pem
+  mode: "644"
 - name: encryption-config
   source: ../chapter3/encryption/encryption-config.yaml
   destination:

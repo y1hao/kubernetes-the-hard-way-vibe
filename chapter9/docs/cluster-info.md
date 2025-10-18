@@ -3,6 +3,7 @@
 ## Installed Components
 - **CoreDNS** — `coredns/coredns:v1.11.1`, deployed in `kube-system` with Service VIP `10.32.0.10` for `cluster.local` DNS resolution.
 - **Metrics Server** — `registry.k8s.io/metrics-server/metrics-server:v0.7.2`, serving the `metrics.k8s.io` API for node/pod metrics via TLS-authenticated kubelet scraping.
+- **Control-plane kube-proxy** — Chapter 5 now ships kube-proxy to `cp-a/b/c` so ClusterIP services resolve locally for aggregated APIs.
 
 ## Operator Commands
 - DNS health:
@@ -14,12 +15,7 @@
   ```bash
   k top nodes
   ```
-- Regenerate trust data if needed:
-  ```bash
-  KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
-  ```
-- The APIService is configured with `insecureSkipTLSVerify: true` to tolerate Metrics Server's self-signed certificate; switch to a signed cert before tightening this setting.
-- Refresh aggregator trust bundle when needed:
+- Refresh the aggregator trust bundle (request-header and client CA data) when needed:
   ```bash
   KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
   ```
