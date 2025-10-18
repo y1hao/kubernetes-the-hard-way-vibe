@@ -17,3 +17,7 @@
 - When terraform is involved, you may run terraform plan, validate and fmt. Ask me to run apply when needed.
 
 - After each chapter is done, after confirming with me, create a summary for that chapter and update README.md to include it.
+
+- Refrain from runing any `kubectl` command yourself. Remember you are running on my local machine, and you cannot access the kubernetes cluster that I created. Running `kubectl` command yourself is a waste of context. If you need to run that command, give me the command and I'll run it on bastion host for you. When you prepare the recommended commands, you can use `k` as `kubectl`, and you can skip `KUBECONFIG` setting which I've already set in .bashrc.
+
+- Similar applies to `ssh` and `scp` command. Don't run them, just recommend me to run them. When you recommend any `ssh` or `scp` command, always include the reference to the key file.
