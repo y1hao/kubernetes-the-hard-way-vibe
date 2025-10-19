@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-ingress-namespaces
+  namespace: default
+  labels:
+    chapter: chapter11
+spec:
+  podSelector:
+    matchLabels:
+      kthw.lab/allow-from-ingress: "true"
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              networking.k8s.io/policy-role: ingress
+  policyTypes:
+    - Ingress
