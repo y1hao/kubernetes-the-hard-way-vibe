@@ -189,6 +189,7 @@ spec:
       priorityClassName: system-cluster-critical
       nodeSelector:
         kubernetes.io/os: linux
+        node-role.kubernetes.io/worker: ""
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           effect: NoSchedule
