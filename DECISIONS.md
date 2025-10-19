@@ -17,3 +17,4 @@
 - [Metrics Server Worker Placement](ADRs/014-metrics-server-worker-placement.md) — Validated hostNetwork metrics-server on workers, fixed secret generation, and documented TLS considerations.
 - [Chapter 12 Backups, Upgrades, and DR Deferral](ADRs/015-chapter12-backup-upgrade-dr-deferral.md) — Document-only scope for resiliency tasks until infrastructure time is allocated.
 - [Chapter 13 Public API Exposure Scope](ADRs/016-chapter13-public-api-exposure-scope.md) — Locked public-access constraints: AWS NLB hostname, admin-only CIDR allowlist, dedicated security group, and deferred edge protections.
+- [Chapter 14 Cleanup and Final-State Documentation Decisions](ADRs/017-chapter14-cleanup-decisions.md) — Document-only teardown commands, manual resource inventory checklist, architecture refresh scope, and no final backups before destruction.
