@@ -24,9 +24,24 @@ Our goals are:
 Doing everything at once is hard. So, let's first start with a high level overview. Please arrange all the things we need to do into several relatively self-contained "chapters". We'll then dig into each "chapter" to get things working gradually.
 ```
 
-From there, ChatGPT created a detailed roadmap, which I saved in [SPEC.md](./spec.md). As part of Chapter 0, I also got a detailed project architecture doc which I saved in [ARCHITECTURE.md](./ARCHITECTURE.md).
+From there, ChatGPT created a detailed roadmap, which I saved in [SPEC.md](./spec.md). As part of Chapter 0, I also got a detailed project architecture doc which I saved in [ARCHITECTURE.md](./ARCHITECTURE.md). (This was revised to reflect the latest architecture after everything was completed.)
 
-For each chapter, I used Codex to discuss, plan and execute. After each chapter is done, I asked Codex to generate a summary of what was completed in the chapter below:
+For each chapter, I used Codex to discuss, plan and execute. After each chapter is done, I asked Codex to generate a summary and append at the end of this document. I used a [RULES.md](./RULES.md) file to specify the behaviour that Codex must adhere to. For design decisions, I asked Codex to create an ADR for each under the [ADRs](./ADRs/) folder. The [DECISIONS.md](./DECISIONS.md) keeps an index of all the ADRs so Codex can digest and access them more efficiently.
+
+## Result
+
+I got a Kubernetes cluster set up from bare metal, which has 3 control plane nodes and 2 worker nodes, and the API server can be accessed from the internet:
+
+![](./screenshots/nodes.png)
+
+I can also run workload on this cluster and expose that to the internet:
+
+![](./screenshots/app.png)
+
+I also get the metrics server working so we can check node usage:
+
+![](./screenshots/top.png)
+
 
 ## Summaries for each completed chapter
 
