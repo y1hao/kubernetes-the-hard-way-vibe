@@ -17,4 +17,6 @@ locals {
     for name, meta in local.node_metadata :
     name => meta if try(meta.role, "") == "worker"
   }
+
+  public_subnet_ids_list = sort([for id in values(local.public_subnet_ids) : id])
 }
