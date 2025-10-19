@@ -17,4 +17,5 @@
 - [Chapter 12 Backups, Upgrades, and DR Deferral](ADRs/015-chapter12-backup-upgrade-dr-deferral.md) — Document-only scope for resiliency tasks until infrastructure time is allocated.
 - [Metrics Server Worker Placement](ADRs/014-metrics-server-worker-placement.md) — Validated hostNetwork metrics-server on workers, fixed secret generation, and documented TLS considerations.
 - [Chapter 13 Public API Exposure Decisions](ADRs/010-chapter13-public-api-exposure-decisions.md) — Public apiserver access pattern, security guardrails, and chapter reshuffle to surface exposure guidance.
+- [Chapter 13 Public API Exposure Scope](ADRs/016-chapter13-public-api-exposure-scope.md) — Locked public-access constraints: AWS NLB hostname, admin-only CIDR allowlist, dedicated security group, and deferred edge protections.
 - [Control Plane Node Agent Integration](ADRs/011-control-plane-node-agent-integration.md) — Enabled containerd/kubelet/kube-proxy on control-plane nodes so they join the pod network and support aggregated APIs.
