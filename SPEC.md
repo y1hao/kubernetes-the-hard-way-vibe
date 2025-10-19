@@ -314,12 +314,14 @@ Here are the roadmap of this project:
 **Work**
 
 * Keep an inventory of EC2, volumes, DNS, and LBs tagged for the cluster.
+* Revise and document the live cluster topology, control plane/worker roles, front doors, and dependencies before teardown.
 * Ship guarded teardown tooling (`cleanup.sh`, Terraform destroy) with confirmations.
 * Take final etcd snapshots and back up AMIs/S3 before destroying anything.
 
 **Artifacts**
 
 * `cleanup.sh`/Terraform destroy plan with tag filters.
+* Final-state architecture notes (diagram + narrative) covering nodes, networking, and access paths.
 * Manual checklist for log retention, WAF, leftovers.
 
 **Validation**
