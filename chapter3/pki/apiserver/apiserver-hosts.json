@@ -1,6 +1,7 @@
 {
   "hosts": [
     "api.kthw.lab",
+    "kthw-public-api-nlb-1d42e77413f7545d.elb.ap-southeast-2.amazonaws.com",
     "10.240.16.10",
     "10.240.48.10",
     "10.240.80.10",
