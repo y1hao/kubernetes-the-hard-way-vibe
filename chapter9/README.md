@@ -2,6 +2,11 @@
 
 This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and Metrics Server for resource metrics. All manifests live in `chapter9/manifests/` and are rendered with cluster-specific values (service CIDR, image pins, TLS settings).
 
+## Status — 2025-10-18
+- CoreDNS and Metrics Server are deployed and healthy; `k top nodes` returns metrics for all nodes.
+- kube-apiserver runs with the aggregation flags, including `--enable-aggregator-routing=true`, and trusts the front-proxy client cert at `/var/lib/kubernetes/front-proxy-client.pem`.
+- `k get apiservice v1beta1.metrics.k8s.io` reports `Available=True`; the aggregation layer is functional.
+
 ## Prerequisites
 - `chapter5/bin/kubectl` with `chapter5/kubeconfigs/admin.kubeconfig` reaches the cluster API.
 - Chapter 8 networking (Calico) is healthy so pods can schedule and resolve DNS.
@@ -16,7 +21,7 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    ```bash
    KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh
    ```
-3. Re-distribute the updated Chapter 5 assets so the control-plane nodes pick up kube-proxy, containerd, and kubelet, then rerun the bootstrap:
+3. Re-distribute the updated Chapter 5 assets so the control-plane nodes pick up kube-proxy, containerd, kubelet, and the refreshed front-proxy materials, then rerun the bootstrap:
    ```bash
    ./chapter5/scripts/distribute_control_plane.sh --nodes cp-a cp-b cp-c --ssh-key chapter1/kthw-lab
    for ip in 10.240.16.10 10.240.48.10 10.240.80.10; do
@@ -55,6 +60,11 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
    k top nodes
    ```
 
+## Troubleshooting
+- If `v1beta1.metrics.k8s.io` reports `FailedDiscoveryCheck`, confirm the control-plane nodes host the front-proxy CA/client PEMs and `kube-apiserver.env` includes the `--requestheader-*`, `--proxy-client-*`, and `--enable-aggregator-routing=true` flags.
+- Re-run `KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh` after updating the front-proxy CA so the `extension-apiserver-authentication` ConfigMap carries the latest bundle.
+- Restart the metrics-server deployment (`k -n kube-system rollout restart deploy/metrics-server`) to pick up ConfigMap changes before re-testing `k top nodes`.
+
 ## Notes
 - CoreDNS service IP is pinned to `10.32.0.10`; ensure kubelets retain `--cluster-dns=10.32.0.10`.
 - Metrics Server talks to kubelets on their secure port using the CA from Chapter 3; no insecure flags are set.
@@ -62,5 +72,5 @@ This chapter deploys cluster-critical add-ons: CoreDNS for service discovery and
 - BusyBox `nslookup` prefers fully qualified names; use `kubernetes.default.svc.cluster.local` for validation.
 - If the Chapter 3 CA lives outside the repo, override it with `CA_PATH=/path/to/ca.pem KUBECTL_BIN=k bash chapter9/scripts/ensure_requestheader_configmap.sh`. The script updates both the request-header and client CA data expected by the aggregator.
 - Ensure containerd/kubelet/kube-proxy are running on all control-plane nodes before validating metrics; without them, the apiserver cannot reach ClusterIP-backed aggregated APIs.
-- The requestheader ConfigMap now relies on the front-proxy CA generated in Chapter 3 (`chapter3/pki/front-proxy/`); regenerate and redistribute those assets before rerunning the kube-apiserver bootstrap.
+- The requestheader ConfigMap relies on the front-proxy CA generated in Chapter 3 (`chapter3/pki/front-proxy/`); regenerate and redistribute those assets before rerunning the kube-apiserver bootstrap.
 - Administrative access continues to rely on the default `system:masters` binding.

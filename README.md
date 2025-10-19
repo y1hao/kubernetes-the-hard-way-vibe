@@ -84,3 +84,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Hardened networking prerequisites by expanding security group rules in `chapter1/terraform/modules/security/main.tf` for BGP/VXLAN traffic and documenting the dependency in `chapter8/README.md`.
 - Added operational artifacts: `chapter8/README.md`, `chapter8/VALIDATION.md`, test fixtures in `chapter8/tests/connectivity.yaml`, and a kubelet proxy RBAC binding under `chapter8/manifests/kube-apiserver-to-kubelet-crb.yaml`.
 - Authored `chapter5/scripts/update_hosts_entries.sh` to align `/etc/hosts` across bastion and nodes, enabling `kubectl exec` validation, and trimmed service-DNS tests until Chapter 9 delivers CoreDNS.
+
+### Chapter 9
+
+- Logged CoreDNS/Metrics Server decisions in `ADRs/009-chapter9-core-addons-decisions.md`, populated manifests under `chapter9/manifests/`, and scripted the request-header ConfigMap refresh via `chapter9/scripts/ensure_requestheader_configmap.sh`.
+- Generated the front-proxy CA/client certs, distributed them with the Chapter 5 manifest, and updated `kube-apiserver.env` to include `--enable-aggregator-routing=true` so aggregated APIs accept proxied requests.
+- Rolled out CoreDNS and a hostNetworked metrics-server deployment, refreshed `extension-apiserver-authentication`, and validated the aggregation layer (`k get apiservice v1beta1.metrics.k8s.io`, `k top nodes`).
