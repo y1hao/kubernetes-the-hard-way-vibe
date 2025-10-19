@@ -87,15 +87,23 @@ resource "aws_lb_listener" "public_api" {
   }
 }
 
-data "aws_instance" "control_planes" {
+data "aws_network_interfaces" "control_plane_primary" {
   for_each = local.control_plane_nodes
 
-  instance_id = each.value.instance_id
+  filter {
+    name   = "attachment.instance-id"
+    values = [each.value.instance_id]
+  }
+
+  filter {
+    name   = "attachment.device-index"
+    values = ["0"]
+  }
 }
 
 resource "aws_network_interface_sg_attachment" "public_api" {
-  for_each = data.aws_instance.control_planes
+  for_each = data.aws_network_interfaces.control_plane_primary
 
   security_group_id    = aws_security_group.public_api.id
-  network_interface_id = each.value.primary_network_interface_id
+  network_interface_id = each.value.ids[0]
 }
