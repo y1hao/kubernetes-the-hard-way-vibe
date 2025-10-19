@@ -108,3 +108,10 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Captured a documentation-only scope for resiliency work in `ADRs/015-chapter12-backup-upgrade-dr-deferral.md`, deferring automation until the resiliency milestone is staffed.
 - Outlined etcd snapshot automation, control-plane upgrade, and node replacement workstreams with proposed scripts and docs in `chapter12/README.md`.
 - Listed validation drills, ownership prerequisites, and follow-up decisions to unblock future execution of the Chapter 12 plan.
+
+### Chapter 13
+
+- Added `ADRs/016-chapter13-public-api-exposure-scope.md` to lock public-access constraints (AWS NLB hostname, admin-only CIDR allowlist, dedicated security group) and recorded the entry in `DECISIONS.md`.
+- Built `chapter13/terraform/` to provision the internet-facing NLB, security group, target group attachments, and ENI SG associations using `admin_cidr_blocks` supplied at plan/apply time via `curl`.
+- Regenerated the kube-apiserver certificate SANs with the NLB hostname, updated the PKI manifest for correct ownership, refreshed the certs on all control planes, and created `chapter13/kubeconfigs/admin-public.kubeconfig` for approved operators.
+- Authored `chapter13/README.md` and the rotation runbook documenting Terraform usage, allowlist updates, cert distribution, and validation (`kubectl --raw=/livez` from the internet, allowlist enforcement, NLB resilience).
