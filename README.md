@@ -90,3 +90,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Logged CoreDNS/Metrics Server decisions in `ADRs/009-chapter9-core-addons-decisions.md`, populated manifests under `chapter9/manifests/`, and scripted the request-header ConfigMap refresh via `chapter9/scripts/ensure_requestheader_configmap.sh`.
 - Generated the front-proxy CA/client certs, distributed them with the Chapter 5 manifest, and updated `kube-apiserver.env` to include `--enable-aggregator-routing=true` so aggregated APIs accept proxied requests.
 - Rolled out CoreDNS and a hostNetworked metrics-server deployment, refreshed `extension-apiserver-authentication`, and validated the aggregation layer (`k get apiservice v1beta1.metrics.k8s.io`, `k top nodes`).
+
+### Chapter 10
+
+- Captured ALB-focused exposure decisions in `ADRs/012-chapter10-app-exposure-decisions.md` and staged Terraform under `chapter10/terraform/` to provision the public ALB, security groups, target group, and instance attachments.
+- Rendered nginx Deployment/Service manifests in `chapter10/manifests/` that surface node identity via Downward API variables, plus documented rollout/cleanup in `chapter10/README.md`.
+- Applied the stack and workload from the bastion, then validated internet reachability by curling the ALB DNS name and confirming target health for both workers.
