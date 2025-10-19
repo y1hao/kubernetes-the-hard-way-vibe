@@ -58,6 +58,17 @@ This document captures the desired end-state architecture for the cluster we bui
 - **Secrets Encryption**: Enabled by default via the apiserver encryption config distributed from Chapter 3 assets.
 - **Security Groups**: Chapter 11 retains the necessary control-plane↔worker allowances for Metrics Server while keeping kubelet read-only ports disabled and limiting ingress to load balancers.
 
+## Security Group Matrix
+
+| Security Group | Attached To | Ingress Highlights | Egress |
+| --- | --- | --- | --- |
+| `kthw-bastion` | Bastion EC2 (Chapter 1) | `admin_cidr_blocks -> tcp/22 (SSH)` | `0.0.0.0/0 -> all`
+| `kthw-control-plane` | Control-plane EC2 (Chapter 1) | `kthw-bastion -> tcp/22 (SSH)`<br/>`kthw-bastion -> tcp/6443 (kubectl)`<br/>`kthw-worker -> tcp/6443 (node API clients)`<br/>`VPC subnets -> tcp/6443 (internal NLB health/client traffic)`<br/>`self -> tcp/2379-2380 (etcd)`<br/>`self + kthw-worker -> tcp/10250 (kubelet)`<br/>`self -> tcp/4443 (metrics server)`<br/>`self + kthw-worker -> tcp/179 (Calico BGP)`<br/>`self + kthw-worker -> udp/4789 (Calico VXLAN)` | `0.0.0.0/0 -> all`
+| `kthw-worker` | Worker EC2 (Chapter 1) | `kthw-bastion -> tcp/22 (SSH)`<br/>`kthw-control-plane -> tcp/10250 (kubelet)`<br/>`self -> tcp/10250 (worker add-ons)`<br/>`kthw-control-plane -> tcp/4443 (metrics server)`<br/>`self + kthw-control-plane -> tcp/179 (Calico BGP)`<br/>`self + kthw-control-plane -> udp/4789 (Calico VXLAN)`<br/>`kthw-ch10-alb -> tcp/30080 (nginx NodePort)`<br/>`nodeport_source_cidrs -> tcp/30000-32767 (disabled unless populated)` | `0.0.0.0/0 -> all`
+| `kthw-api-nlb` | Defined for internal API NLB (Chapter 6, currently unattached) | `kthw-bastion -> tcp/6443 (reserved admin access)` | `0.0.0.0/0 -> all`
+| `kthw-ch10-alb` | Application ALB (Chapter 10) | `0.0.0.0/0 -> tcp/80 (HTTP)` | `0.0.0.0/0 -> all`
+| `kthw-public-api` | Public API NLB ENIs + control-plane ENIs (Chapter 13) | `admin_cidr_blocks -> tcp/6443 (public kubectl)` | `0.0.0.0/0 -> all`
+
 ## External Exposure
 
 - **Internal Control Plane Endpoint**: AWS Network Load Balancer (`kthw-api-nlb`) spans the private subnets on TCP 6443. Private Route53 alias `api.kthw.lab` targets it for in-cluster access.
