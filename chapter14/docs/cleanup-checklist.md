@@ -12,7 +12,7 @@ Use this checklist to dismantle the Kubernetes the Hard Way lab. Commands are gr
 
 1. Destroy Chapter 13 public API exposure stack.
 2. Destroy Chapter 10 app exposure stack.
-3. Destroy Chapter 7/8/9 runtime assets handled manually (no Terraform; validate nothing critical remains).
+3. Destroy Chapter 6 internal API access stack.
 4. Destroy Chapter 2 node provisioning stack (instances).
 5. Destroy Chapter 1 network substrate stack (VPC).
 
@@ -22,42 +22,29 @@ Use this checklist to dismantle the Kubernetes the Hard Way lab. Commands are gr
 # Navigate to repo root
 cd "$(git rev-parse --show-toplevel)"
 
+# Capture current public IP for stacks that require admin CIDR input
+ADMIN_IP=$(curl -fsS ifconfig.me)
+ADMIN_CIDR="${ADMIN_IP}/32"
+
 # Chapter 13: Public API exposure
-cd chapter13/terraform
-terraform init \
-  -backend-config="key=chapter13/terraform.tfstate" \
-  -input=false
-terraform plan -destroy -out=tfplan
-terraform show tfplan
-terraform destroy -auto-approve
+bin/terraform -chdir=chapter13/terraform destroy \
+  -var="admin_cidr_blocks=[\"${ADMIN_CIDR}\"]"
 
 # Chapter 10: App exposure
-cd ../../chapter10/terraform
-terraform init \
-  -backend-config="key=chapter10/terraform.tfstate" \
-  -input=false
-terraform plan -destroy -out=tfplan
-terraform show tfplan
-terraform destroy -auto-approve
+bin/terraform -chdir=chapter10/terraform destroy
+
+# Chapter 6: Internal API access
+bin/terraform -chdir=chapter6/terraform destroy
 
 # Chapter 2: Nodes (control planes + workers)
-cd ../../chapter2/terraform
-terraform init \
-  -backend-config="key=chapter2/terraform.tfstate" \
-  -input=false
-terraform plan -destroy -out=tfplan
-terraform show tfplan
-terraform destroy -auto-approve
+bin/terraform -chdir=chapter2/terraform destroy
 
 # Chapter 1: Network substrate
-cd ../../chapter1/terraform
-terraform init \
-  -backend-config="key=chapter1/terraform.tfstate" \
-  -input=false
-terraform plan -destroy -out=tfplan
-terraform show tfplan
-terraform destroy -auto-approve
+bin/terraform -chdir=chapter1/terraform destroy \
+  -var="admin_cidr_blocks=[\"${ADMIN_CIDR}\"]"
 ```
+
+Each `terraform destroy` run will present the plan and prompt for confirmation; answer `yes` when you are satisfied. If Terraform complains about missing plugins or state, run `terraform init` in that directory once and retry the destroy.
 
 > **Note**: If a plan step reveals resources you intend to keep temporarily (e.g., bastion for postmortem), cancel and update the stack manually before re-running.
 
