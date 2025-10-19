@@ -1,133 +1,148 @@
 # Kubernetes the Hard Way — Target Architecture
 
-This document captures the desired end-state architecture for the cluster we are about to build by hand on AWS. It explains the topology, core components, access patterns, and key design decisions together with the reasoning behind each choice. The goal is to ensure every decision is explicit and reviewed before any infrastructure is provisioned.
+This document captures the desired end-state architecture for the cluster we built by hand on AWS. It explains the topology, core components, access patterns, and key design decisions, all of which are grounded in the ADRs and maintained as the canonical reference for the lab.
 
 ## Cluster Topology & Availability
 
-- **Nodes**: 3 control plane nodes and 2 worker nodes.
-  - Control plane maintains quorum even if one AZ or instance is lost.
-  - Worker capacity lives in AZ a and AZ b for cost savings; AZ c hosts only a control plane node until we scale out.
-- **Availability Zones**: Spread the control plane across all three AZs; keep workers in AZ a and AZ b while leaving the AZ c worker slot idle for now.
-  - Avoids multi-region latency while preserving control plane resilience; note that losing AZ a or AZ b removes worker capacity until we scale out again.
-  - Aligns with AWS fault domains and keeps costs predictable.
-- **Instance Sizing**: Control plane nodes run on `t3.medium`; workers run on `t3.small` to trim unused capacity.
-  - Keeps etcd and control components responsive while cutting worker costs; monitor aggregate pod memory when scheduling demos.
-  - Leaves headroom for control plane workloads (etcd + Kubernetes components) and basic application demos.
+- **Nodes**: Three control-plane nodes and two worker nodes.
+  - Control plane instances (`cp-a`, `cp-b`, `cp-c`) are distributed one per AZ to preserve quorum through the loss of an AZ or a single instance.
+  - Worker capacity (`worker-a`, `worker-b`) lives in AZ a and AZ b; the AZ c worker slot is reserved for future scale-out.
+  - Control-plane nodes run kubelet, kube-proxy, containerd, and Calico alongside etcd and the control-plane binaries (ADR 011). They remain tainted so application workloads stay on the workers unless explicitly scheduled.
+- **Availability Zones**: `cp-a` and `worker-a` reside in AZ a, `cp-b` and `worker-b` in AZ b, and `cp-c` stands alone in AZ c.
+  - AZ-aware placement keeps latencies low while maximising resilience to zonal failure.
+- **Instance Sizing**: Control plane nodes use `t3.medium`; workers use `t3.small` after Chapter 2 right-sizing.
+  - Provides enough memory/CPU headroom for control-plane services, Calico, and kubelet metrics scraping without overspending on worker capacity.
 
 ## Network Layout
 
-- **VPC CIDR**: `10.240.0.0/16` dedicated to this environment.
-  - Large enough to carve subnets for control planes, workers, and public access while staying isolated from common corporate ranges.
-- **Subnets**: For each AZ, create one public subnet (for bastion/LBs) and one private subnet (for nodes).
-  - Public subnets expose only the bastion and load balancers; worker and control plane nodes remain private.
-  - Simplifies routing by aligning subnets with AZs and supports static private IP assignment per node.
-- **Routing**: Internet Gateway attached to the VPC. NAT gateway is optional; outbound traffic from private subnets can be proxied through the bastion when necessary.
-  - Minimizes AWS dependencies while preserving the ability to fetch packages during bootstrap.
+- **VPC CIDR**: `10.240.0.0/16` dedicated to the lab to avoid overlap with corporate ranges.
+- **Subnets**: Per AZ, one public subnet (load balancers, bastion) and one private subnet (control plane and workers).
+  - Public subnets host the bastion, the application ALB, and public API NLB interfaces; private subnets host the EC2 nodes and the internal API NLB.
+- **Routing**: Internet Gateway plus a NAT gateway for outbound package fetches. Private subnets route through the NAT while the bastion and public load balancers use the IGW directly.
+- **Addressing**: Static private IPs follow ADR 002 (e.g., `cp-a 10.240.16.10`, `worker-b 10.240.48.20`).
 
 ## Kubernetes Networking Choices
 
-- **Pod CIDR**: `10.200.0.0/16` assigned cluster-wide.
-  - Provides ample address space and avoids overlap with the VPC and Service CIDR.
-- **Service CIDR**: `10.32.0.0/24`.
-  - Keeps service IP range compact and easy to reason about, while leaving space for future expansion if required.
-- **CNI Plugin**: Calico running in VXLAN mode.
-  - Self-contained solution with mature NetworkPolicy support and no dependence on AWS IAM.
-  - VXLAN keeps routing simple across subnets; MTU adjustments (target 8941) will be documented if necessary.
-- **Kube-Proxy**: IPVS mode once the cluster is up.
-  - More predictable performance under load compared to iptables, and Calico fully supports it.
+- **Pod CIDR**: `10.200.0.0/16` cluster-wide; pairs cleanly with the overlay network.
+- **Service CIDR**: `10.32.0.0/24` with the first IP reserved for the cluster DNS service.
+- **CNI**: Calico in VXLAN mode schedules on every node, including the control plane (ADR 008, ADR 011), so ClusterIP services and aggregated APIs are reachable everywhere.
+- **Kube-Proxy**: Runs in iptables mode initially with the option to move to IPVS; rules are consistent across control plane and worker nodes.
+- **Calico MTU**: Defaults suffice on ENA-backed instances; documentation calls out how to adjust if workloads require jumbo frames.
 
 ## Control Plane Components
 
-- **Runtime**: `containerd` deployed on every node.
-  - Matches upstream Kubernetes defaults, avoids legacy Docker shim, and keeps the footprint minimal.
-- **etcd**: Three-node etcd cluster colocated with the control plane nodes.
-  - TLS secured peer and client traffic; data directories stored on dedicated volumes for easier backup.
-- **Kubernetes Binaries**: `kube-apiserver`, `kube-controller-manager`, `kube-scheduler`, and `kubelet` installed directly from upstream release tarballs.
-  - Preserves the spirit of “the hard way” by avoiding packaged installers like kubeadm.
-  - Systemd units manage lifecycle with explicit flags captured in version-controlled manifests.
+- **etcd**: Three-node cluster (v3.5.12) with TLS for peer and client traffic, colocated with the control-plane instances.
+- **Kubernetes Binaries**: `kube-apiserver`, `kube-controller-manager`, `kube-scheduler`, and `kubectl` installed from upstream release tarballs. Systemd units, env files, and manifests live under version control (Chapters 4–5).
+- **Node Agents on Controllers**: containerd, kubelet, and kube-proxy mirror the worker configuration (ADR 011). Controllers keep the `node-role.kubernetes.io/control-plane:NoSchedule` taint to deter general workloads while still serving metrics and overlay routes.
+- **Certificates & Encryption**: kube-apiserver trusts Chapter 3 PKI assets, includes SANs for internal (`api.kthw.lab`) and public NLB hostnames, and loads the secrets-at-rest encryption config.
+
+## Worker Stack & Platform Services
+
+- **Worker Components**: Each worker runs containerd, kubelet, kube-proxy, and Calico. Cloud-init handles kernel modules (`overlay`, `br_netfilter`, `nf_conntrack`), sysctls, swap disablement, and base tooling (`chrony`, `conntrack`, `socat`, etc.).
+- **CoreDNS**: Deployed per Chapter 9 with the service IP `10.32.0.10` and runs in the `kube-system` namespace.
+- **Metrics Server**: HostNetwork deployment pinned to worker nodes with `node-role.kubernetes.io/worker` selectors (ADR 014). The aggregated API currently relies on `insecureSkipTLSVerify: true` pending a future CA bundle update.
+- **NetworkPolicies**: Default-deny ingress/egress policies for the `default` namespace plus an allow-from-ingress namespace pattern (ADR 013). Namespace owners extend these policies as needed.
 
 ## Access & Tooling Strategy
 
-- **Bastion Host**: Single Ubuntu 22.04 instance in a public subnet, limited inbound to known admin IPs.
-  - Primary entry for SSH and node-level work while keeping the data plane private.
-  - Doubles as the control point for certificate distribution and configuration management via `scp`/`ssh`.
-- **Public API Access**: Approved operator networks reach the kube-apiserver through a public NLB with restricted CIDRs and Route53.
-  - Enables direct `kubectl` from workstations without hopping through the bastion while preserving auditing and guardrails.
-- **Optional SSM**: Evaluate AWS Systems Manager Session Manager as an enhancement.
-  - Could eliminate public SSH altogether later, but bastion remains the baseline due to deterministic workflow.
-- **Admin Tooling**: Install `awscli`, `jq`, `kubectl`, `cfssl`, `etcdctl`, and `helm` (for future add-ons) on both local machines and the bastion.
-  - Ensures consistent operator experience; `cfssl` accelerates cert generation, `jq` aids AWS CLI parsing, and `kubectl` enables verification once the API is online.
+- **Bastion Host**: Ubuntu 22.04 instance in the AZ a public subnet, restricted to trusted admin CIDRs. Serves as the control point for `ssh`, `scp`, and cluster tooling.
+- **Internal API Access**: Private Route53 zone `kthw.lab` fronts the internal NLB at `api.kthw.lab`, used by nodes and bastion workflows (Chapter 6).
+- **Public API Access**: Chapter 13 provisions a public-facing NLB with a dedicated security group that only permits administrator CIDRs. Operators consume the AWS-issued NLB DNS name via `chapter13/kubeconfigs/admin-public.kubeconfig`.
+- **Admin Tooling**: `awscli`, `jq`, `kubectl`, `cfssl`, `etcdctl`, and helper scripts are installed on both local machines and the bastion. Terraform workflows live under each chapter.
 
 ## PKI & Security Posture
 
-- **Certificate Authority**: Offline root CA with optional online intermediate used to issue component certificates.
-  - Simplifies revocation and rotation while keeping the highest-privilege keys off AWS.
-- **Certificates**: Individual cert/key pairs for kube-apiserver, etcd peers/clients, controller-manager, scheduler, kubelets, kube-proxy, and an admin user.
-  - SANs include API server private IPs, the load balancer DNS name, and the default service names required by Kubernetes.
-- **Secrets**: Encryption at rest configured via the API server using an encryption config managed through the bastion.
-- **OS Hardening**: Ubuntu 22.04 chosen for its long-term support, predictable security updates, and familiar package management.
-  - Base configuration disables swap, enforces `chrony` for time sync, and loads required kernel modules.
+- **Certificate Authority**: Offline root CA with intermediate issuance handled through `cfssl`. All component certs are stored in `chapter3/pki/` with distribution manifests.
+- **Client & Serving Certs**: Individual cert/key pairs for kube-apiserver (private + public SANs), etcd members, controller-manager, scheduler, kubelets (per node), kube-proxy, and the admin user. Kubelet certificates underpin node authentication for both controllers and workers.
+- **RBAC**: Explicit ClusterRoleBinding maps the Chapter 3 admin identity to `cluster-admin` (ADR 013). Additional bindings follow least privilege.
+- **Secrets Encryption**: Enabled by default via the apiserver encryption config distributed from Chapter 3 assets.
+- **Security Groups**: Chapter 11 retains the necessary control-plane↔worker allowances for Metrics Server while keeping kubelet read-only ports disabled and limiting ingress to load balancers.
 
 ## External Exposure
 
-- **Control Plane Endpoint (internal)**: AWS Network Load Balancer fronting the three control plane nodes on TCP 6443 inside the VPC.
-  - Native health checks and cross-AZ failover with minimal additional maintenance.
-  - Alternative (documented but not primary): self-managed HAProxy pair with Elastic IP failover.
-- **Control Plane Endpoint (public)**: Second NLB in public subnets exposing TCP 6443 to allowlisted operator CIDRs.
-  - Shares the same targets as the internal NLB while layering WAF/CloudWatch alarms for edge visibility.
-- **Application Exposure**: NLB also used later for user workloads by pointing to worker node NodePorts (e.g., 30080 for nginx demo).
-  - Provides a stable, public entry point without managing Ingress controllers initially.
-- **DNS**: Route53 publishes internal and public records (e.g., `api.kthw.internal`, `api.kthw.example.com`) aligned with the respective load balancers.
+- **Internal Control Plane Endpoint**: AWS Network Load Balancer (`kthw-api-nlb`) spans the private subnets on TCP 6443. Private Route53 alias `api.kthw.lab` targets it for in-cluster access.
+- **Public Control Plane Endpoint**: A second Network Load Balancer publishes TCP 6443 to the internet with an allowlist-driven security group (ADR 016). The AWS-generated DNS name is the canonical public endpoint; certificates and kubeconfigs include this hostname.
+- **Application Exposure**: Chapter 10 introduces an Application Load Balancer over the public subnets. It listens on HTTP/80 and forwards to the workers’ NodePort 30080 for the sample nginx deployment (ADR 012). No public Route53 zone is created; clients use the ALB DNS name.
+- **DNS Summary**: Private DNS lives in Route53 (`kthw.lab`). Public endpoints (API NLB, ALB) rely on AWS-provided hostnames.
 
 ## Naming & Tagging Conventions
 
-- **Hostnames**: `cp-a`, `cp-b`, `cp-c` for control planes and `worker-a`, `worker-b` for workers (with `worker-c` reserved), aligning the suffix with the AZ letter.
-- **Tags**: Apply `Project=K8sHardWay`, `Role=ControlPlane|Worker|Bastion`, and `Env=Lab` to all AWS resources.
-  - Simplifies search, IAM policies, and cleanup scripts.
+- **Hostnames**: `cp-{a,b,c}` and `worker-{a,b}` align with AZ letters for immediate fault-domain context.
+- **AWS Tags**: `Project=K8sHardWay`, `Role=ControlPlane|Worker|Bastion|LoadBalancer`, and `Env=Lab` applied consistently to aid discovery and teardown.
 
 ## Operational Considerations
 
-- **Backups**: Plan for scheduled etcd snapshots stored off-box (S3 or secure local storage).
-- **Logging & Monitoring**: Base OS logs retained locally; future chapters may integrate CloudWatch or open-source stack, but not required for initial bring-up.
-- **Documentation**: Maintain runbooks for bastion bootstrap, certificate distribution, and node provisioning under version control.
+- **Backups & DR**: Chapter 12 captures the intended etcd snapshot and upgrade runbooks as documentation only (ADR 015); no automated snapshots run in this lab.
+- **Logging & Monitoring**: OS logs remain local. Metrics Server and `kubectl top` provide basic observability; richer stacks are deferred.
+- **Network Policy Hygiene**: Default-deny policies mean new namespaces should ship explicit allows. The ingress label pattern in Chapter 11 serves as the baseline.
+- **Teardown Readiness**: Chapter 14 provides copy-pasteable Terraform destroy sequences and manual AWS checks rather than executable scripts (ADR 017).
 
-This architecture will be refined only if validation in Chapter 0 uncovers conflicts (e.g., CIDR overlap with existing networks or AWS quota limits). Otherwise, it forms the blueprint for the subsequent implementation chapters.
+## Visual Topology
 
-## Architecture Diagram
+### Network & AZ Layout
 
+```mermaid
+flowchart LR
+  subgraph VPC["VPC 10.240.0.0/16"]
+    direction LR
+    subgraph AZa["AZ a"]
+      direction TB
+      PA["Public Subnet<br/>10.240.0.0/24<br/>Bastion + LB ENIs"]
+      SA["Private Subnet<br/>10.240.16.0/24<br/>cp-a · worker-a"]
+    end
+    subgraph AZb["AZ b"]
+      direction TB
+      PB["Public Subnet<br/>10.240.32.0/24<br/>LB ENIs"]
+      SB["Private Subnet<br/>10.240.48.0/24<br/>cp-b · worker-b"]
+    end
+    subgraph AZc["AZ c"]
+      direction TB
+      PC["Public Subnet<br/>10.240.64.0/24<br/>LB ENIs"]
+      SC["Private Subnet<br/>10.240.80.0/24<br/>cp-c"]
+    end
+  end
+
+  Bastion["Bastion Host"]
+  PublicAPI["Public API NLB<br/>TCP 6443"]
+  InternalAPI["Internal API NLB<br/>api.kthw.lab:6443"]
+  AppALB["Application ALB<br/>HTTP 80 -> NodePort 30080"]
+
+  Bastion --- PA
+  PublicAPI --- SA
+  PublicAPI --- SB
+  PublicAPI --- SC
+  InternalAPI --- SA
+  InternalAPI --- SB
+  InternalAPI --- SC
+  AppALB --- SA
+  AppALB --- SB
 ```
-+-----------------------------------------------------------------------+
-| AWS VPC 10.240.0.0/16                                                 |
-|                                                                       |
-|  +-----------------+     +-----------------+     +-----------------+  |
-|  | Availability    |     | Availability    |     | Availability    |  |
-|  | Zone a          |     | Zone b          |     | Zone c          |  |
-|  |                 |     |                 |     |                 |  |
-|  |  +-----------+  |     |  +-----------+  |     |  +-----------+  |  |
-|  |  | Public    |  |     |  | Public    |  |     |  | Public    |  |  |
-|  |  | Subnet    |  |     |  | Subnet    |  |     |  | Subnet    |  |  |
-|  |  | 10.240.0  |  |     |  | 10.240.32 |  |     |  | 10.240.64 |  |  |
-|  |  |  /24      |  |     |  |  /24      |  |     |  |  /24      |  |  |
-|  |  |           |  |     |  |           |  |     |  |           |  |  |
-|  |  |  Bastion  |  |     |  |  (future) |  |     |  |  (future) |  |  |
-|  |  |  Host     |  |     |  |  LB nodes |  |     |  |  LB nodes |  |  |
-|  |  |  NLB      |<-+-----+->|  NLB      |<-+-----+->|  NLB      |  |  |
-|  |  +-----------+  |     |  +-----------+  |     |  +-----------+  |  |
-|  |  +-----------+  |     |  +-----------+  |     |  +-----------+  |  |
-|  |  | Private   |  |     |  | Private   |  |     |  | Private   |  |  |
-|  |  | Subnet    |  |     |  | Subnet    |  |     |  | Subnet    |  |  |
-|  |  | 10.240.16 |  |     |  | 10.240.48 |  |     |  | 10.240.80 |  |  |
-|  |  |  /24      |  |     |  |  /24      |  |     |  |  /24      |  |  |
-|  |  |           |  |     |  |           |  |     |  |           |  |  |
-|  |  |  cp-a     |  |     |  |  cp-b     |  |     |  |  cp-c     |  |  |
-|  |  |  etcd     |  |     |  |  etcd     |  |     |  |  etcd     |  |  |
-|  |  |  worker-a |  |     |  |  worker-b |  |     |  |  worker (res) |  |  |
-|  |  |           |  |     |  |           |  |     |  |           |  |  |
-|  |  +-----------+  |     |  +-----------+  |     |  +-----------+  |  |
-|  +-----------------+     +-----------------+     +-----------------+  |
-|                                                                       |
-|  Control Plane NLB (TCP 6443) -> NodePort NLB (TCP 30080)             |
-|  Bastion: SSH, tooling, certificate distribution                      |
-|  Calico VXLAN overlay across private subnets                          |
-+-----------------------------------------------------------------------+
+
+### Node Component Layout
+
+```mermaid
+flowchart LR
+  subgraph ControlPlane["Control-plane nodes"]
+    direction LR
+    cpA["cp-a<br/>- etcd member<br/>- kube-apiserver<br/>- kube-controller-manager<br/>- kube-scheduler<br/>- containerd<br/>- kubelet (tainted)<br/>- kube-proxy<br/>- Calico node"]
+    cpB["cp-b<br/>- etcd member<br/>- kube-apiserver<br/>- kube-controller-manager<br/>- kube-scheduler<br/>- containerd<br/>- kubelet (tainted)<br/>- kube-proxy<br/>- Calico node"]
+    cpC["cp-c<br/>- etcd member<br/>- kube-apiserver<br/>- kube-controller-manager<br/>- kube-scheduler<br/>- containerd<br/>- kubelet (tainted)<br/>- kube-proxy<br/>- Calico node"]
+  end
+
+  subgraph Workers["Worker nodes"]
+    direction LR
+    workerA["worker-a<br/>- containerd<br/>- kubelet<br/>- kube-proxy<br/>- Calico node<br/>- Metrics Server (hostNetwork)<br/>- Application pods"]
+    workerB["worker-b<br/>- containerd<br/>- kubelet<br/>- kube-proxy<br/>- Calico node<br/>- Metrics Server (hostNetwork)<br/>- Application pods"]
+  end
+
+  CoreDNS["CoreDNS Deployment<br/>(Service IP 10.32.0.10)"]
+  NetworkPolicy["Namespace default-deny<br/>NetworkPolicies"]
+  MetricsServer["Metrics Server APIService<br/>(insecureSkipTLSVerify)"]
+
+  CoreDNS --> workerA
+  CoreDNS --> workerB
+  MetricsServer --> workerA
+  MetricsServer --> workerB
+  NetworkPolicy --> workerA
+  NetworkPolicy --> workerB
 ```
