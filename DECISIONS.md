@@ -12,5 +12,6 @@
 
 - [Chapter 8 Cluster Networking Decisions](ADRs/008-chapter8-networking-decisions.md) — Calico release selection, VXLAN-only encapsulation, MTU handling, and artifact layout for Chapter 8 networking rollout.
 - [Chapter 9 Core Add-ons Decisions](ADRs/009-chapter9-core-addons-decisions.md) — CoreDNS and Metrics Server baselines, DNS VIP allocation, RBAC scope, and artifact layout for Chapter 9.
+- [Chapter 10 App Exposure Decisions](ADRs/012-chapter10-app-exposure-decisions.md) — ALB-based internet exposure strategy, listener scope, security group adjustments, and artifact layout for Chapter 10.
 - [Chapter 13 Public API Exposure Decisions](ADRs/010-chapter13-public-api-exposure-decisions.md) — Public apiserver access pattern, security guardrails, and chapter reshuffle to surface exposure guidance.
 - [Control Plane Node Agent Integration](ADRs/011-control-plane-node-agent-integration.md) — Enabled containerd/kubelet/kube-proxy on control-plane nodes so they join the pod network and support aggregated APIs.
