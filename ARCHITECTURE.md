@@ -69,6 +69,53 @@ This document captures the desired end-state architecture for the cluster we bui
 | `kthw-ch10-alb` | Application ALB (Chapter 10) | `0.0.0.0/0 -> tcp/80 (HTTP)` | `0.0.0.0/0 -> all`
 | `kthw-public-api` | Public API NLB ENIs + control-plane ENIs (Chapter 13) | `admin_cidr_blocks -> tcp/6443 (public kubectl)` | `0.0.0.0/0 -> all`
 
+## PKI & Kubeconfig Inventory
+
+### PKI artifacts (by component)
+
+- **Root certificate authority** (`chapter3/pki/ca/`)
+  - `ca.pem` — offline root CA certificate that signs every component certificate.
+  - `ca-key.pem` — private key for the root CA (kept off-cluster).
+  - `ca-config.json` — cfssl signing profiles for components and kubelets.
+  - `ca.csr`, `ca-csr.json` — retained request/config that produced the root CA.
+- **Front-proxy CA** (`chapter3/pki/front-proxy/`)
+  - `front-proxy-ca.pem` / `front-proxy-ca-key.pem` — aggregation-layer CA for front-proxy clients.
+  - `front-proxy-client.pem` / `front-proxy-client-key.pem` / `front-proxy-client-csr.json` — certificate and key used by the aggregator to reach the apiserver.
+- **Kube-apiserver serving material** (`chapter3/pki/apiserver/`)
+  - `apiserver.pem` / `apiserver-key.pem` — TLS identity covering control-plane node IPs plus internal and public NLB hostnames.
+  - `apiserver-hosts.json` — definitive SAN list consumed by regeneration scripts.
+  - `apiserver.csr`, `apiserver-csr.json` — csr + config retained for auditability.
+- **Controller and system clients**
+  - `chapter3/pki/controller-manager/kube-controller-manager.pem` / `kube-controller-manager-key.pem` — controller manager client credential.
+  - `chapter3/pki/scheduler/kube-scheduler.pem` / `kube-scheduler-key.pem` — scheduler client credential.
+  - `chapter3/pki/kube-proxy/kube-proxy.pem` / `kube-proxy-key.pem` — kube-proxy client credential.
+- **Per-node kubelet identities** (`chapter3/pki/kubelet/<node>/`)
+  - Each node directory (`cp-a`, `cp-b`, `cp-c`, `worker-a`, `worker-b`) contains `kubelet.pem`, `kubelet-key.pem`, and the matching `csr.json` / `kubelet.csr` pair used when issuing the node certificate.
+  - `kubelet-csr-template.json` captures the cfssl template applied to every node CSR.
+- **Administrative and add-on clients**
+  - `chapter3/pki/admin/admin.pem` / `admin-key.pem` — admin user mapped to the Chapter 11 ClusterRoleBinding.
+  - `chapter3/pki/metrics-server/metrics-server.pem` / `metrics-server-key.pem` — metrics-server client identity (ADR 014).
+- **Service account signing keys** (`chapter5/pki/`)
+  - `service-account.key` / `service-account.pub` — RSA keypair used by the controller manager to sign and validate Kubernetes service account tokens.
+- **etcd certificates** (`chapter4/pki/`)
+  - `peer/<node>/peer.pem` / `peer-key.pem` — TLS identities for etcd peer-to-peer replication on each control-plane node.
+  - `server/<node>/server.pem` / `server-key.pem` — etcd server certificates presented to local clients (kube-apiserver, etcdctl).
+  - `client/etcd-client.pem` / `etcd-client-key.pem` — client credential bundled with bastion tooling for TLS-authenticated etcdctl operations.
+- **Supporting metadata**
+  - `chapter3/pki/manifest.yaml` — master manifest that drives distribution tooling and ownership assignments.
+  - `chapter3/encryption/encryption-config.yaml` — secrets-at-rest encryption policy loaded by the apiserver.
+
+### Kubeconfig files
+
+- `chapter5/kubeconfigs/admin.kubeconfig` — bastion/admin configuration for the internal API endpoint.
+- `chapter5/kubeconfigs/kube-controller-manager.kubeconfig` — systemd unit kubeconfig for the controller manager.
+- `chapter5/kubeconfigs/kube-scheduler.kubeconfig` — systemd unit kubeconfig for the scheduler.
+- `chapter5/kubeconfigs/cp-a-kubelet.kubeconfig`, `cp-b-kubelet.kubeconfig`, `cp-c-kubelet.kubeconfig` — kubelet configs for the control-plane nodes (ADR 011).
+- `chapter7/kubeconfigs/worker-a-kubelet.kubeconfig`, `worker-b-kubelet.kubeconfig` — kubelet configs for worker nodes.
+- `chapter7/kubeconfigs/kube-proxy.kubeconfig` — shared kube-proxy client configuration distributed to all nodes.
+- `chapter9/kubeconfigs/metrics-server.kubeconfig` — metrics-server client configuration referencing its dedicated certificate.
+- `chapter13/kubeconfigs/admin-public.kubeconfig` — admin configuration using the public NLB hostname for off-VPC access.
+
 ## External Exposure
 
 - **Internal Control Plane Endpoint**: AWS Network Load Balancer (`kthw-api-nlb`) spans the private subnets on TCP 6443. Private Route53 alias `api.kthw.lab` targets it for in-cluster access.
