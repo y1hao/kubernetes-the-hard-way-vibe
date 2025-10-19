@@ -1,46 +1,48 @@
 # Kube-apiserver Certificate Rotation (Public Endpoint)
 
-Follow this runbook after regenerating `chapter3/pki/apiserver/apiserver.pem` and `apiserver-key.pem` with the public NLB hostname SAN.
+Use this procedure after updating `chapter3/pki/apiserver/apiserver.pem` to include the public NLB hostname.
 
-## 1. Stage artifacts to the bastion (from local workstation)
+## 1. Sync repository to the bastion
+Ensure the bastion has the refreshed certificate and key (e.g., `git pull` from this repo).
+
+## 2. Dry-run distribution (optional)
+From the bastion, preview the copy operations:
 ```bash
-scp -i chapter1/kthw-lab \
-  chapter3/pki/apiserver/apiserver.pem \
-  chapter3/pki/apiserver/apiserver-key.pem \
-  ubuntu@$(bin/terraform -chdir=chapter1/terraform output -raw bastion_public_ip):/tmp/ch13-apiserver/
+python3 chapter3/scripts/distribute_pki.py \
+  --manifest chapter3/pki/manifest.yaml \
+  --nodes cp-a cp-b cp-c \
+  --ssh-key chapter1/kthw-lab \
+  --dry-run
 ```
 
-## 2. Copy artifacts to each control plane (run on bastion)
+## 3. Distribute the updated cert/key
+Run the distribution for the control-plane nodes:
+```bash
+python3 chapter3/scripts/distribute_pki.py \
+  --manifest chapter3/pki/manifest.yaml \
+  --nodes cp-a cp-b cp-c \
+  --ssh-key chapter1/kthw-lab
+```
+The script copies `apiserver.pem`/`apiserver-key.pem` into `/var/lib/kubernetes/` with the correct ownership and modes.
+
+## 4. Restart kube-apiserver on each control plane
 ```bash
 for node in 10.240.16.10 10.240.48.10 10.240.80.10; do
-  scp -i $(pwd)/chapter1/kthw-lab /tmp/ch13-apiserver/apiserver.pem \
-    /tmp/ch13-apiserver/apiserver-key.pem \
-    ubuntu@${node}:/tmp/
+  ssh -i chapter1/kthw-lab ubuntu@${node} \
+    'sudo systemctl restart kube-apiserver && sudo systemctl --no-pager status kube-apiserver'
 done
 ```
-
-## 3. Install and restart kube-apiserver (run per control plane)
-```bash
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@10.240.16.10 <<'REMOTE'
-sudo install -o root -g root -m 640 /tmp/apiserver.pem /var/lib/kubernetes/apiserver.pem
-sudo install -o root -g root -m 600 /tmp/apiserver-key.pem /var/lib/kubernetes/apiserver-key.pem
-sudo systemctl restart kube-apiserver
-sudo systemctl --no-pager status kube-apiserver
-REMOTE
-```
-Repeat for `10.240.48.10` and `10.240.80.10`.
-
-## 4. Cleanup
-```bash
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@10.240.16.10 'sudo rm -f /tmp/apiserver.pem /tmp/apiserver-key.pem'
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@10.240.48.10 'sudo rm -f /tmp/apiserver.pem /tmp/apiserver-key.pem'
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@10.240.80.10 'sudo rm -f /tmp/apiserver.pem /tmp/apiserver-key.pem'
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@$(bin/terraform -chdir=chapter1/terraform output -raw bastion_public_ip) 'rm -rf /tmp/ch13-apiserver'
-```
+Adjust the IPs if control-plane addressing changes.
 
 ## 5. Validation
-```bash
-ssh -i $(pwd)/chapter1/kthw-lab ubuntu@10.240.16.10 \
-  'sudo openssl x509 -in /var/lib/kubernetes/apiserver.pem -noout -text | grep -E "DNS:|IP Address"'
-```
-Confirm the public NLB hostname appears in the SAN list.
+- Confirm SANs include the public NLB hostname:
+  ```bash
+  ssh -i chapter1/kthw-lab ubuntu@10.240.16.10 \
+    'sudo openssl x509 -in /var/lib/kubernetes/apiserver.pem -noout -text | grep -F "kthw-public-api"'
+  ```
+- Verify the API is healthy from each node:
+  ```bash
+  ssh -i chapter1/kthw-lab ubuntu@10.240.16.10 \
+    'sudo kubectl --kubeconfig /var/lib/kubernetes/admin.kubeconfig get --raw=/livez'
+  ```
+- After generating the internet-facing kubeconfig, test from your workstation against the public NLB endpoint.
