@@ -100,3 +100,5 @@ entries:
     path: /var/lib/kubernetes/encryption-config.yaml
   notes: Copy key separately; set owner root, mode 600.
   sensitive: true
+  owner: kube-apiserver
+  group: kube-apiserver
