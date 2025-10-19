@@ -30,93 +30,93 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 
 ## Summaries for each completed chapter
 
-### Chapter 0
+### [Chapter 0](chapter0/)
 
 - Documented the target AWS-based Kubernetes architecture with decisions and rationale in `ARCHITECTURE.md`.
 - Appended an ASCII topology diagram illustrating VPC, AZ, subnet, and node placement.
 - Clarified Calico’s VXLAN mode and its alternatives, plus explained kube-proxy’s IPVS mode behavior.
 
-### Chapter 1
+### [Chapter 1](chapter1/)
 
 - Captured Chapter 1 prerequisite decisions in `ADRs/000-chapter1-network-prep-decisions.md` and indexed them via `DECISIONS.md`.
 - Scaffolded `chapter1/terraform/` with network and security modules, plus documented inputs and notes for future chapters.
 - Provisioned the AWS network substrate (VPC, subnets, IGW, managed NAT, security groups) using Terraform 1.13.3.
 
-### Chapter 2
+### [Chapter 2](chapter2/)
 
 - Recorded Chapter 2 provisioning choices in `ADRs/001-chapter2-node-provisioning-decisions.md` and later right-sized the worker fleet via `ADRs/002-chapter2-worker-sizing-adjustment.md`, updating `DECISIONS.md` accordingly.
 - Built `chapter2/terraform/` to launch 3× control-plane `t3.medium` instances and 2× worker `t3.small` instances with 20 GiB gp3 roots using cloud-init templates and dynamic Ubuntu 22.04 AMI discovery via SSM.
 - Added committed ops assets: role-specific cloud-init (`chapter2/cloud-init/`), a static inventory (`chapter2/inventory.yaml`), and a bastion-run validation script (`chapter2/scripts/validate_nodes.sh`).
 
-### Chapter 3
+### [Chapter 3](chapter3/)
 
 - Logged PKI strategy in `ADRs/003-chapter3-pki-decisions.md` and expanded `.gitignore` to keep generated secrets out of version control.
 - Produced full PKI inventory under `chapter3/pki/` using `cfssl`, including apiserver, component, admin, and per-node kubelet certificates with documented SAN coverage.
 - Generated secrets encryption material in `chapter3/encryption/`, drafted distribution/rotation guidance (`chapter3/pki/manifest.yaml`, `chapter3/REVOCATION.md`), and captured execution notes in `chapter3/README.md`.
 
-### Chapter 4
+### [Chapter 4](chapter4/)
 
 - Brought up the three-node etcd cluster (v3.5.12) with TLS on all control-plane nodes using the Chapter 3 CA and staged binaries under `chapter4/bin/`.
 - Extended the manifest-driven distribution tooling and added `chapter4/scripts/bootstrap_etcd_node.sh` to standardise service bring-up.
 - Documented validation flows (`etcdctl endpoint status/health`, `member list`) and captured implementation notes in `chapter4/README.md`.
 
-### Chapter 5
+### [Chapter 5](chapter5/)
 
 - Finalised control-plane assets under `chapter5/`, including env files, systemd units, distribution manifest, and an idempotent bootstrap script aligned with ADR 005.
 - Removed the obsolete `--cloud-provider=none` flag, converted controller-manager/scheduler units to `Type=exec`, and fixed kube-apiserver advertising/permissions to eliminate handler timeouts.
 - From the bastion ran `distribute_control_plane.sh --nodes <cp>` followed by `bootstrap_control_plane.sh` on each control-plane node (cp-a/b/c), confirmed services via `systemctl status`, and verified `/healthz?verbose`.
 
-### Chapter 6
+### [Chapter 6](chapter6/)
 
 - Introduced the internal AWS NLB (`kthw-api-nlb`) with TCP 6443 listener and target group covering `cp-a`, `cp-b`, and `cp-c`, plus a private Route53 zone `kthw.lab` exposing `api.kthw.lab`.
 - Stood up the dedicated `chapter6/terraform/` stack and README detailing usage, validation, and outputs for the shared API endpoint.
 - Expanded Chapter 1 security groups so the control plane accepts kube-apiserver traffic from the NLB subnets, enabling load-balanced access from the bastion and future clients.
 
-### Chapter 7
+### [Chapter 7](chapter7/)
 
 - Logged worker runtime decisions in `ADRs/007-chapter7-worker-stack-decisions.md` and updated `DECISIONS.md` to track Chapter 7 scope.
 - Staged Kubernetes v1.31.1 worker binaries plus containerd v1.7.14/runc v1.1.12/crictl v1.31.1 under `chapter7/bin/`, templated configs in `chapter7/config/`, and defined distribution targets via `chapter7/manifest.yaml`.
 - Authored `chapter7/scripts/enable_workers.sh` and README guidance so workers install the stack, register with the control plane, and remain `NotReady` pending the Chapter 8 CNI rollout.
 
-### Chapter 8
+### [Chapter 8](chapter8/)
 
 - Captured Calico networking choices in `ADRs/008-chapter8-networking-decisions.md` and linked them through `DECISIONS.md`, then rendered a VXLAN-tuned manifest at `chapter8/calico.yaml` alongside the archived upstream source.
 - Hardened networking prerequisites by expanding security group rules in `chapter1/terraform/modules/security/main.tf` for BGP/VXLAN traffic and documenting the dependency in `chapter8/README.md`.
 - Added operational artifacts: `chapter8/README.md`, `chapter8/VALIDATION.md`, test fixtures in `chapter8/tests/connectivity.yaml`, and a kubelet proxy RBAC binding under `chapter8/manifests/kube-apiserver-to-kubelet-crb.yaml`.
 - Authored `chapter5/scripts/update_hosts_entries.sh` to align `/etc/hosts` across bastion and nodes, enabling `kubectl exec` validation, and trimmed service-DNS tests until Chapter 9 delivers CoreDNS.
 
-### Chapter 9
+### [Chapter 9](chapter9/)
 
 - Logged CoreDNS/Metrics Server decisions in `ADRs/009-chapter9-core-addons-decisions.md`, populated manifests under `chapter9/manifests/`, and scripted the request-header ConfigMap refresh via `chapter9/scripts/ensure_requestheader_configmap.sh`.
 - Generated the front-proxy CA/client certs, distributed them with the Chapter 5 manifest, and updated `kube-apiserver.env` to include `--enable-aggregator-routing=true` so aggregated APIs accept proxied requests.
 - Rolled out CoreDNS and a hostNetworked metrics-server deployment, refreshed `extension-apiserver-authentication`, and validated the aggregation layer (`k get apiservice v1beta1.metrics.k8s.io`, `k top nodes`).
 
-### Chapter 10
+### [Chapter 10](chapter10/)
 
 - Captured ALB-focused exposure decisions in `ADRs/012-chapter10-app-exposure-decisions.md` and staged Terraform under `chapter10/terraform/` to provision the public ALB, security groups, target group, and instance attachments.
 - Rendered nginx Deployment/Service manifests in `chapter10/manifests/` that surface node identity via Downward API variables, plus documented rollout/cleanup in `chapter10/README.md`.
 - Applied the stack and workload from the bastion, then validated internet reachability by curling the ALB DNS name and confirming target health for both workers.
 
-### Chapter 11
+### [Chapter 11](chapter11/)
 
 - Logged hardening choices in `ADRs/013-chapter11-security-decisions.md` and `ADRs/014-metrics-server-worker-placement.md`, covering RBAC, NetworkPolicies, and metrics-server worker placement.
 - Added `chapter11/manifests/` RBAC + policy assets, refreshed metrics-server secrets/script, and confirmed hostNetwork metrics-server runs cleanly on workers with the aggregated API reachable.
 - Documented validation steps in `chapter11/README.md` and `chapter11/VALIDATION.md`, including kubelet read-only checks and guidance for ingress namespace labelling.
 
-### Chapter 12
+### [Chapter 12](chapter12/)
 
 - Captured a documentation-only scope for resiliency work in `ADRs/015-chapter12-backup-upgrade-dr-deferral.md`, deferring automation until the resiliency milestone is staffed.
 - Outlined etcd snapshot automation, control-plane upgrade, and node replacement workstreams with proposed scripts and docs in `chapter12/README.md`.
 - Listed validation drills, ownership prerequisites, and follow-up decisions to unblock future execution of the Chapter 12 plan.
 
-### Chapter 13
+### [Chapter 13](chapter13/)
 
 - Added `ADRs/016-chapter13-public-api-exposure-scope.md` to lock public-access constraints (AWS NLB hostname, admin-only CIDR allowlist, dedicated security group) and recorded the entry in `DECISIONS.md`.
 - Built `chapter13/terraform/` to provision the internet-facing NLB, security group, target group attachments, and ENI SG associations using `admin_cidr_blocks` supplied at plan/apply time via `curl`.
 - Regenerated the kube-apiserver certificate SANs with the NLB hostname, updated the PKI manifest for correct ownership, refreshed the certs on all control planes, and created `chapter13/kubeconfigs/admin-public.kubeconfig` for approved operators.
 - Authored `chapter13/README.md` and the rotation runbook documenting Terraform usage, allowlist updates, cert distribution, and validation (`kubectl --raw=/livez` from the internet, allowlist enforcement, NLB resilience).
 
-### Chapter 14
+### [Chapter 14](chapter14/)
 
 - Captured teardown guidance in `chapter14/docs/cleanup-checklist.md`, including ordered Terraform destroy commands, manual AWS verification steps, and ready-to-run CLI snippets for each resource family.
 - Refreshed `ARCHITECTURE.md` with Mermaid diagrams, a security group matrix, and full PKI/kubeconfig inventories so the document reflects the final cluster state.
