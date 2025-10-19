@@ -115,3 +115,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Built `chapter13/terraform/` to provision the internet-facing NLB, security group, target group attachments, and ENI SG associations using `admin_cidr_blocks` supplied at plan/apply time via `curl`.
 - Regenerated the kube-apiserver certificate SANs with the NLB hostname, updated the PKI manifest for correct ownership, refreshed the certs on all control planes, and created `chapter13/kubeconfigs/admin-public.kubeconfig` for approved operators.
 - Authored `chapter13/README.md` and the rotation runbook documenting Terraform usage, allowlist updates, cert distribution, and validation (`kubectl --raw=/livez` from the internet, allowlist enforcement, NLB resilience).
+
+### Chapter 14
+
+- Captured teardown guidance in `chapter14/docs/cleanup-checklist.md`, including ordered Terraform destroy commands, manual AWS verification steps, and ready-to-run CLI snippets for each resource family.
+- Refreshed `ARCHITECTURE.md` with Mermaid diagrams, a security group matrix, and full PKI/kubeconfig inventories so the document reflects the final cluster state.
+- Logged the cleanup decisions in `ADRs/017-chapter14-cleanup-decisions.md`, updated `DECISIONS.md`, and scaffolded `chapter14/README.md` for future execution notes.
