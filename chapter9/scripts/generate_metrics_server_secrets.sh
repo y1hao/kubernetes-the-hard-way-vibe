@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CA_PATH="${CA_PATH:-$REPO_ROOT/chapter3/pki/ca/ca.pem}"
 CLIENT_CERT="${CLIENT_CERT:-$REPO_ROOT/chapter3/pki/metrics-server/metrics-server.pem}"
 CLIENT_KEY="${CLIENT_KEY:-$REPO_ROOT/chapter3/pki/metrics-server/metrics-server-key.pem}"
-KUBECONFIG="${KUBECONFIG:-$REPO_ROOT/chapter9/kubeconfigs/metrics-server.kubeconfig}"
+KTHW_METRICS_SERVER_KUBECONFIG="${KTHW_METRICS_SERVER_KUBECONFIG:-$REPO_ROOT/chapter9/kubeconfigs/metrics-server.kubeconfig}"
 OUTPUT="${OUTPUT:-$REPO_ROOT/chapter9/manifests/metrics-server-secrets.yaml}"
 
 usage() {
@@ -17,7 +17,7 @@ Environment overrides:
   CA_PATH       (default: chapter3/pki/ca/ca.pem)
   CLIENT_CERT   (default: chapter3/pki/metrics-server/metrics-server.pem)
   CLIENT_KEY    (default: chapter3/pki/metrics-server/metrics-server-key.pem)
-  KUBECONFIG    (default: chapter9/kubeconfigs/metrics-server.kubeconfig)
+  KTHW_METRICS_SERVER_KUBECONFIG (default: chapter9/kubeconfigs/metrics-server.kubeconfig)
   OUTPUT        (default: chapter9/manifests/metrics-server-secrets.yaml)
 EOF
   exit 1
@@ -42,7 +42,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --kubeconfig)
       [[ $# -lt 2 ]] && usage
-      KUBECONFIG="$2"
+      KTHW_METRICS_SERVER_KUBECONFIG="$2"
       shift 2
       ;;
     --output)
@@ -60,7 +60,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-for path in "$CA_PATH" "$CLIENT_CERT" "$CLIENT_KEY" "$KUBECONFIG"; do
+for path in "$CA_PATH" "$CLIENT_CERT" "$CLIENT_KEY" "$KTHW_METRICS_SERVER_KUBECONFIG"; do
   if [[ ! -f "$path" ]]; then
     echo "Missing required file: $path" >&2
     exit 1
@@ -88,7 +88,7 @@ metadata:
   namespace: kube-system
 type: Opaque
 data:
-  kubeconfig: $(base64 -w0 < "$KUBECONFIG")
+  kubeconfig: $(base64 -w0 < "$KTHW_METRICS_SERVER_KUBECONFIG")
 EOF
 
 echo "Done. Apply with: kubectl apply -f $OUTPUT"
