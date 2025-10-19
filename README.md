@@ -102,3 +102,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Logged hardening choices in `ADRs/013-chapter11-security-decisions.md` and `ADRs/014-metrics-server-worker-placement.md`, covering RBAC, NetworkPolicies, and metrics-server worker placement.
 - Added `chapter11/manifests/` RBAC + policy assets, refreshed metrics-server secrets/script, and confirmed hostNetwork metrics-server runs cleanly on workers with the aggregated API reachable.
 - Documented validation steps in `chapter11/README.md` and `chapter11/VALIDATION.md`, including kubelet read-only checks and guidance for ingress namespace labelling.
+
+### Chapter 12
+
+- Captured a documentation-only scope for resiliency work in `ADRs/015-chapter12-backup-upgrade-dr-deferral.md`, deferring automation until the resiliency milestone is staffed.
+- Outlined etcd snapshot automation, control-plane upgrade, and node replacement workstreams with proposed scripts and docs in `chapter12/README.md`.
+- Listed validation drills, ownership prerequisites, and follow-up decisions to unblock future execution of the Chapter 12 plan.
