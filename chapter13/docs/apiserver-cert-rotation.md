@@ -23,7 +23,7 @@ python3 chapter3/scripts/distribute_pki.py \
   --nodes cp-a cp-b cp-c \
   --ssh-key chapter1/kthw-lab
 ```
-The script copies `apiserver.pem`/`apiserver-key.pem` into `/var/lib/kubernetes/` with the correct ownership and modes.
+The manifest now pins owner/group to `kube-apiserver`, so the files land with the proper ownership automatically.
 
 ## 4. Restart kube-apiserver on each control plane
 ```bash

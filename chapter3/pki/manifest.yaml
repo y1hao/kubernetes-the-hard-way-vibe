@@ -23,6 +23,8 @@ entries:
     path: /var/lib/kubernetes/apiserver.pem
   notes: Copy cert/key alongside `kube-apiserver` config; requires owner root, mode
     600 for key.
+  owner: kube-apiserver
+  group: kube-apiserver
 - name: kube-controller-manager
   cert: controller-manager/kube-controller-manager.pem
   key: controller-manager/kube-controller-manager-key.pem
