@@ -1,10 +1,10 @@
-# Kubernetes the Hard Way (Vibe Version)
+# Kubernetes The Hard Way (Vibe Version)
 
 ## Motivation
 
-Kubernetes the Hard Way is a classic learning resource for people who want learn Kubernetes seriously. I also followed it when I first learned Kubernetes a couple of years ago. It did give me more familarity and a better mental model of the moving pieces in Kubernetes. However, since the explanations in that tutorial were very brief, for many parts I ended up just following along by copying and pasting the documented bash snippets, without really gaining a thorough understanding. In the end, everything worked, but I still didn't feel 100% confident.
+[Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) is a classic learning resource for everyone who wants learn Kubernetes seriously. I also followed that tutorial when I first learned Kubernetes a couple of years ago. It gave me more familarity and a better mental model of the moving pieces in Kubernetes. However, since the explanations in that tutorial were very brief, for many parts I ended up just following along by copying and pasting the documented bash snippets, without really gaining a thorough understanding. In the end, everything worked, but I still didn't feel 100% confident.
 
-And I realised that's very similar to the experience of vibe coding. So I began to wonder - why don't I just vibe code the whole thing from scratch? In the end, I should get something that works as well, but in the process, I would get to make a lot more decisions, and ask a lot more questions - this should teach me more.
+And I realised that's very similar to the experience of vibe coding. So I began to wonder - why don't I just vibe code the whole thing from scratch? In the end, I should get something that works as well, but in the process, I would get to make a lot more decisions, and ask a lot more questions - and this would teach me more skills and knowledge.
 
 ## Approach
 
