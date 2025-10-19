@@ -50,7 +50,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
 
 ## Manual Resource Checklist
 
-- [ ] Confirm no EC2 instances remain with tags `Project=K8sHardWay`.
+- [x] Confirm no EC2 instances remain with tags `Project=K8sHardWay`.
 
   ```bash
   aws ec2 describe-instances \
@@ -59,7 +59,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --output table
   ```
 
-- [ ] Check for unattached EBS volumes created by the cluster.
+- [x] Check for unattached EBS volumes created by the cluster.
 
   ```bash
   aws ec2 describe-volumes \
@@ -68,7 +68,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --output table
   ```
 
-- [ ] Verify Network Load Balancers (internal and public) are deleted.
+- [x] Verify Network Load Balancers (internal and public) are deleted.
 
   ```bash
   aws elbv2 describe-load-balancers \
@@ -76,7 +76,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --output table
   ```
 
-- [ ] Ensure Route53 records created for the cluster are removed.
+- [x] Ensure Route53 records created for the cluster are removed.
 
   ```bash
   HOSTED_ZONE_ID="<your_private_zone_or_public_zone_id>"
@@ -85,7 +85,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --query 'ResourceRecordSets[?contains(Name, `kthw`)]'
   ```
 
-- [ ] Confirm VPC, subnets, route tables, and security groups tagged for the project are gone.
+- [x] Confirm VPC, subnets, route tables, and security groups tagged for the project are gone.
 
   ```bash
   aws ec2 describe-vpcs \
@@ -109,7 +109,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --output table
   ```
 
-- [ ] Remove IAM roles, instance profiles, and key pairs created for the environment if not reused.
+- [x] Remove IAM roles, instance profiles, and key pairs created for the environment if not reused.
 
   ```bash
   aws iam list-roles \
@@ -129,7 +129,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
     --output table
   ```
 
-- [ ] Delete any S3 buckets or objects that stored Terraform state (if this lab used a dedicated bucket).
+- [x] Delete any S3 buckets or objects that stored Terraform state (if this lab used a dedicated bucket).
 
   ```bash
   aws s3 ls | grep kthw || true
@@ -138,7 +138,7 @@ Each `terraform destroy` run will present the plan and prompt for confirmation; 
   aws s3api delete-bucket --bucket <kthw-terraform-state-bucket>
   ```
 
-- [ ] Confirm local artifacts (kubeconfigs, certs) are archived or deleted per your security requirements.
+- [x] Confirm local artifacts (kubeconfigs, certs) are archived or deleted per your security requirements.
 
   ```bash
   find chapter3/pki -maxdepth 2 -type f -print
