@@ -96,3 +96,9 @@ For each chapter, I used Codex to discuss, plan and execute. After each chapter 
 - Captured ALB-focused exposure decisions in `ADRs/012-chapter10-app-exposure-decisions.md` and staged Terraform under `chapter10/terraform/` to provision the public ALB, security groups, target group, and instance attachments.
 - Rendered nginx Deployment/Service manifests in `chapter10/manifests/` that surface node identity via Downward API variables, plus documented rollout/cleanup in `chapter10/README.md`.
 - Applied the stack and workload from the bastion, then validated internet reachability by curling the ALB DNS name and confirming target health for both workers.
+
+### Chapter 11
+
+- Logged hardening choices in `ADRs/013-chapter11-security-decisions.md` and `ADRs/014-metrics-server-worker-placement.md`, covering RBAC, NetworkPolicies, and metrics-server worker placement.
+- Added `chapter11/manifests/` RBAC + policy assets, refreshed metrics-server secrets/script, and confirmed hostNetwork metrics-server runs cleanly on workers with the aggregated API reachable.
+- Documented validation steps in `chapter11/README.md` and `chapter11/VALIDATION.md`, including kubelet read-only checks and guidance for ingress namespace labelling.
