@@ -8,7 +8,6 @@
 6. Append the public NLB DNS name to `chapter3/pki/apiserver/apiserver-hosts.json` and regenerate the kube-apiserver certificate/key with `cfssl`, replacing the existing artifacts.
 7. Prepare guidance and helper artifacts for deploying the refreshed certificate/key to each control-plane node and restarting kube-apiserver via bastion-executed commands.
 8. Generate `chapter13/kubeconfigs/admin-public.kubeconfig` that targets the public NLB endpoint and document its distribution workflow.
-9. Write the CIDR allowlist reference and rotation SOP in `chapter13/docs/allowlist.md`.
-10. Draft the Chapter 13 remote access runbook in `chapter13/README.md`, covering Terraform usage, certificate rotation, kubeconfig updates, and operator guidance.
-11. Record the validation checklist and exact commands in the Chapter 13 docs to confirm public kubectl access, allowlist enforcement, and control-plane resilience.
-12. Update the repo `README.md` with the Chapter 13 summary once validations complete.
+9. Fold CIDR allowlist rotation guidance into `chapter13/README.md`, relying on Terraform state/outputs instead of separate docs.
+10. Record the validation checklist and exact commands in the Chapter 13 docs to confirm public kubectl access, allowlist enforcement, and control-plane resilience.
+11. Update the repo `README.md` with the Chapter 13 summary once validations complete.

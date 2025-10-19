@@ -1,6 +1,6 @@
 locals {
-  load_balancer_name = "kthw-public-api-nlb"
-  target_group_name  = "kthw-public-api-targets"
+  load_balancer_name  = "kthw-public-api-nlb"
+  target_group_name   = "kthw-public-api-targets"
   security_group_name = "kthw-public-api"
 }
 
